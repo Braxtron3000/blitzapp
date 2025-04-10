@@ -115,9 +115,9 @@ model SingleSet {
     id                Int             @id @default(autoincrement())
     workoutExerciseId Int
     workoutExercise   WorkoutExercise @relation(fields: [workoutExerciseId], references: [id], onDelete: Cascade)
-    weight            Int
-    reps              Int
-    restTime          Int
+    weight            Int?
+    reps              Int?
+    restTime          Int?
 }
 
 model WorkoutLog {

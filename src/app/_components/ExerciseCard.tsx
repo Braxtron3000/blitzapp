@@ -10,9 +10,9 @@ type exerciseProps = RecursivePartial<
     }[];
     sets: {
       id: number;
-      weight: number;
-      reps: number;
-      restTime: number;
+      weight: number | null;
+      reps: number | null;
+      restTime: number | null;
       workoutExerciseId: number;
     }[];
   } & {
@@ -100,13 +100,13 @@ const ExerciseCard = (props: exerciseProps & exerciseCardProps) => {
                   ),
               });
             }}
-            value={set.reps}
+            value={set.reps ?? undefined}
           />
           <input
             placeholder="weight"
             type="number"
             className="w-1 flex-1"
-            value={set.weight}
+            value={set.weight ?? undefined}
             onChange={({ target: { value } }) => {
               props.onUpdate({
                 ...props,
@@ -123,7 +123,7 @@ const ExerciseCard = (props: exerciseProps & exerciseCardProps) => {
             placeholder="restTime"
             type="number"
             className="w-1 flex-1"
-            value={set.restTime}
+            value={set.restTime ?? undefined}
             onChange={({ target: { value } }) => {
               props.onUpdate({
                 ...props,

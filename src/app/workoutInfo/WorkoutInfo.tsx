@@ -7,6 +7,7 @@ import { api as apiServer } from "~/trpc/server";
 import NewExerciseModal from "../_components/NewExerciseModal";
 import ExerciseCard from "../_components/ExerciseCard";
 import { RecursivePartial } from "~/constants/types";
+import { set } from "zod";
 
 type workoutProp = NonNullable<
   Awaited<ReturnType<typeof apiServer.workout.findWorkoutById>>
@@ -35,11 +36,10 @@ const WorkoutInfoId = (
   const [description, setDescription] = useState(props.workout?.description);
 
   type workoutNotNull = NonNullable<typeof props.workout>;
-  type routineType = RecursivePartial<workoutNotNull["routine"][number]>[];
+  type editingRoutineType = RecursivePartial<
+    workoutNotNull["routine"][number]
+  >[];
 
-  const [routine, setRoutine] = useState<routineType>(
-    props.workout?.routine ?? [],
-  );
   // const submitWorkouts = api.workout.seed.useMutation({
   //   onSuccess: async () => {
   //     console.log("successful workout creations");
@@ -63,6 +63,12 @@ const WorkoutInfoId = (
       console.error("error creating workouts", e);
     },
   });
+
+  type submittingObjType = Parameters<typeof submitWorkouts.mutate>[0];
+
+  const [routine, setRoutine] = useState<editingRoutineType>(
+    props.workout?.routine ?? [],
+  );
 
   const updateExercise = (
     index: number,
@@ -91,12 +97,21 @@ const WorkoutInfoId = (
             }
 
             e.preventDefault();
+
             submitWorkouts.mutate({
-              description,
-              routine: [
-                { exerciseName: "bench", musclesTargeted: [], sets: [] },
-              ],
               title,
+              description,
+              routine: routine.map((exercise) => ({
+                exerciseName: exercise.exerciseName ?? "",
+                musclesTargeted:
+                  exercise.musclesTargeted?.map(({ name }) => name ?? "") ?? [],
+                sets:
+                  exercise.sets?.map((set) => ({
+                    weight: set.weight ?? 0,
+                    reps: set.reps ?? 0,
+                    restTime: set.restTime ?? 1,
+                  })) ?? [],
+              })),
             });
 
             router.push("/");
@@ -144,7 +159,11 @@ const WorkoutInfoId = (
 
       {routine.map((exercise, i) => (
         <ExerciseCard
-          {...exercise}
+          exerciseName={exercise.exerciseName}
+          musclesTargeted={exercise.musclesTargeted}
+          workoutId={exercise.workoutId}
+          workoutLogId={exercise.workoutLogId}
+          sets={exercise.sets}
           key={i + ""}
           onDelete={() => {}}
           onUpdate={(exercise) => updateExercise(i, exercise)}

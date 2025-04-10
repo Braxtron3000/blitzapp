@@ -112,9 +112,9 @@ export const workoutRouter = createTRPCRouter({
             musclesTargeted: z.string().array(),
             sets: z
               .object({
-                weight: z.number(),
-                reps: z.number(),
-                restTime: z.number(),
+                weight: z.number().nullable(),
+                reps: z.number().nullable(),
+                restTime: z.number().nullable(),
               })
               .array(),
           })
