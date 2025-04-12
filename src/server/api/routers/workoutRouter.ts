@@ -154,32 +154,32 @@ export const workoutRouter = createTRPCRouter({
         return;
       }
 
-      // const workoutExercises = await ctx.db.workoutExercise.createManyAndReturn(
-      //   {
-      //     data: input.routine.map((workoutExercise) => {
-      //       return {
-      //         workoutId: firstindex!.id, //returns above if its undefined.
-      //         workoutLogId: workoutLogfirstIndex.id,
-      //         exerciseName: workoutExercise.exerciseName,
-      //         musclesTargeted: workoutExercise.musclesTargeted,
-      //       };
-      //     }),
-      //     select: { id: true },
-      //   },
-      // );
-
       const workoutExercises = await ctx.db.workoutExercise.createManyAndReturn(
         {
-          data: [
-            {
+          data: input.routine.map((workoutExercise) => {
+            return {
+              workoutId: firstindex!.id, //returns above if its undefined.
               workoutLogId: workoutLogfirstIndex.id,
-              exerciseName: "bench",
-              workoutId: firstindex.id,
-            },
-          ],
+              exerciseName: workoutExercise.exerciseName,
+              // musclesTargeted: workoutExercise.musclesTargeted,
+            };
+          }),
           select: { id: true },
         },
       );
+
+      // const workoutExercises = await ctx.db.workoutExercise.createManyAndReturn(
+      //   {
+      //     data: [
+      //       {
+      //         workoutLogId: workoutLogfirstIndex.id,
+      //         exerciseName: ,
+      //         workoutId: firstindex.id,
+      //       },
+      //     ],
+      //     select: { id: true },
+      //   },
+      // );
 
       workoutExercises.forEach((id, index) =>
         ctx.db.workoutExercise.update({
@@ -236,8 +236,33 @@ export const workoutRouter = createTRPCRouter({
     return await ctx.db.workout.findMany();
   }),
 
+  deleteWorkout: publicProcedure
+    .input(
+      z.object({
+        id: z.number(),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      console.log("deleted workout ", input.id);
+
+      return await ctx.db.$transaction([
+        ctx.db.workout.deleteMany({
+          where: { id: input.id },
+        }),
+        ctx.db.workoutLog.deleteMany({
+          where: { id: input.id },
+        }),
+        ctx.db.workoutExercise.deleteMany({
+          where: { id: input.id },
+        }),
+        ctx.db.singleSet.deleteMany({
+          where: { id: input.id },
+        }),
+      ]);
+    }),
+
   findWorkoutById: publicProcedure
-    .input(z.object({ id: z.string() }))
+    .input(z.object({ id: z.number() }))
     .query(async ({ ctx, input }) => {
       if (Number(input.id) < 0) {
         console.warn("searching for workoutid that isnt a number ", input.id);

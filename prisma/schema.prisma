@@ -81,7 +81,7 @@ model Workout {
     description String?
     /// This is the original creator. (This might need to be refactored because workout copy's can be changed so much it's nothing like the og. maybe something like authors: User[])
     authorId    String
-    author      User              @relation(fields: [authorId], references: [id], onDelete: Cascade, name: "author")
+    author      User              @relation(fields: [authorId], references: [id], name: "author")
     /// This is who has the ability to edit this workout. It can be a copy of the author's workout that this user can edit.
     ownerId     String
     owner       User              @relation(fields: [ownerId], references: [id], onDelete: Cascade, name: "owner")
@@ -96,7 +96,7 @@ model WorkoutExercise {
     exerciseName    String
     musclesTargeted MuscleGroups[]
     sets            SingleSet[]
-    workout         Workout        @relation(fields: [workoutId], references: [id])
+    workout         Workout        @relation(fields: [workoutId], references: [id], onDelete: Cascade, onUpdate: Cascade)
     workoutId       Int
     workoutLog      WorkoutLog?    @relation(fields: [workoutLogId], references: [id])
     workoutLogId    Int?
@@ -114,7 +114,7 @@ model MuscleGroups {
 model SingleSet {
     id                Int             @id @default(autoincrement())
     workoutExerciseId Int
-    workoutExercise   WorkoutExercise @relation(fields: [workoutExerciseId], references: [id], onDelete: Cascade)
+    workoutExercise   WorkoutExercise @relation(fields: [workoutExerciseId], references: [id], onDelete: Cascade, onUpdate: Cascade)
     weight            Int?
     reps              Int?
     restTime          Int?
@@ -122,7 +122,7 @@ model SingleSet {
 
 model WorkoutLog {
     id              Int               @id @default(autoincrement())
-    workoutTemplate Workout           @relation(fields: [workoutId], references: [id])
+    workoutTemplate Workout           @relation(fields: [workoutId], references: [id], onDelete: Cascade, onUpdate: Cascade)
     workoutId       Int
     loggedRoutine   WorkoutExercise[]
 }

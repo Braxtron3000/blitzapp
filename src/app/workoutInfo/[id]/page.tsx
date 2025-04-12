@@ -9,7 +9,13 @@ const WorkoutInfoIdPage = async ({
 }) => {
   const session = await auth();
   const { id } = await params;
-  const workout = await api.workout.findWorkoutById({ id });
+  const numberedId = Number(id);
+
+  if (Number(id) < 0) {
+    return <h1>we couldnt find this workout</h1>;
+  }
+
+  const workout = await api.workout.findWorkoutById({ id: numberedId });
 
   if (!workout) {
     return <h1>we couldnt find this workout</h1>;
@@ -17,7 +23,7 @@ const WorkoutInfoIdPage = async ({
   return (
     <WorkoutInfoId
       mode={"read"}
-      id={id}
+      id={numberedId}
       workout={workout}
       canEdit={session?.user.id == workout.ownerId}
     />

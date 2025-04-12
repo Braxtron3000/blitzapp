@@ -24,98 +24,85 @@ type exerciseProps = RecursivePartial<
 >;
 
 type exerciseCardProps = {
-  onDelete: () => void;
-  onUpdate: (exercise: exerciseProps) => void;
-  editMode: boolean;
+  onDeleteSet: () => void;
+  onUpdateSet: (exercise: exerciseProps) => void;
+  onRemoveExercise: () => void;
+  mode: "read" | "create" | "start";
 };
 
 const ExerciseCard = (props: exerciseProps & exerciseCardProps) => {
-  const [editMode, setEditMode] = useState(false);
+  const editable = props.mode != "read";
 
   return (
     <div className="flex w-full max-w-xs flex-col gap-4 rounded-xl bg-white/10 p-4">
-      {editMode ? (
-        <input className="text-black" type="text" placeholder="Exercise Name" />
-      ) : (
-        <h1>{props.exerciseName}</h1>
+      {editable && (
+        <button className="h-7 w-7 rounded-full bg-red-500">x</button>
       )}
-      {editMode && (
-        <button
-          onClick={() => setEditMode(!editMode)}
-          className={`${editMode ? "bg-yellow-500" : "bg-yellow-600"}`}
-        >
-          edit
-        </button>
-      )}
+      <h1>{props.exerciseName}</h1>
 
-      {editMode && (
-        <div className="flex flex-row justify-between">
-          <button
-            className="rounded-full bg-red-600 px-10 py-3 hover:bg-red-500"
-            type="button"
-            onClick={props.onDelete}
-          >
-            Delete
-          </button>
-          <button
-            className="rounded-full bg-green-600 px-10 py-3 hover:bg-green-500"
-            type="button"
-            onClick={() => {
-              const lastSet = props.sets?.at(-1);
-              console.log("adding sets");
-              props.onUpdate({
-                ...props,
-                sets: props.sets?.concat({
+      {editable && (
+        <button
+          className="rounded-full bg-green-600 hover:bg-green-500"
+          type="button"
+          onClick={() => {
+            const lastSet = props.sets?.at(-1);
+            console.log("adding sets");
+            props.onUpdateSet({
+              ...props,
+              sets: props.sets?.concat({
+                reps: lastSet?.reps,
+                restTime: lastSet?.restTime,
+                weight: lastSet?.weight,
+              }) ?? [
+                {
                   reps: lastSet?.reps,
                   restTime: lastSet?.restTime,
                   weight: lastSet?.weight,
-                }) ?? [
-                  {
-                    reps: lastSet?.reps,
-                    restTime: lastSet?.restTime,
-                    weight: lastSet?.weight,
-                  },
-                ],
-              });
-            }}
-          >
-            Add
-          </button>
-        </div>
+                },
+              ],
+            });
+          }}
+        >
+          Add
+        </button>
       )}
       {props.sets?.map((set, i) => (
-        <div className="flex flex-row justify-evenly gap-1">
+        <div key={i.toString()} className="flex flex-row justify-evenly gap-1">
           <input
             placeholder="reps"
             type="number"
             className="w-1 flex-1 text-black"
-            disabled={!props.editMode}
+            disabled={props.mode === "read"}
             onChange={({ target: { value } }) => {
-              props.onUpdate({
+              props.onUpdateSet({
                 ...props,
-                sets: props.sets
-                  ?.slice(0, i)
-                  .concat(
-                    { ...props.sets.at(i), reps: Number(value) },
-                    props.sets.slice(i + 1),
-                  ),
+                sets: props.sets?.slice(0, i).concat(
+                  {
+                    ...props.sets.at(i),
+                    reps: value ? Number(value) : undefined,
+                  },
+                  props.sets.slice(i + 1),
+                ),
               });
             }}
-            value={set.reps ?? undefined}
+            value={set.reps ?? ""}
           />
           <input
             placeholder="weight"
             type="number"
             className="w-1 flex-1 text-black"
-            value={set.weight ?? undefined}
-            disabled={!props.editMode}
+            value={set.weight ?? ""}
+            disabled={props.mode === "read"}
             onChange={({ target: { value } }) => {
-              props.onUpdate({
+              props.onUpdateSet({
                 ...props,
                 sets: props.sets
                   ?.slice(0, i)
                   .concat(
-                    { ...props.sets.at(i), weight: Number(value) },
+                    {
+                      ...props.sets.at(i),
+                      weight: value ? Number(value) : undefined,
+                    },
                     props.sets.slice(i + 1),
                   ),
               });
@@ -125,31 +112,36 @@ const ExerciseCard = (props: exerciseProps & exerciseCardProps) => {
             placeholder="restTime"
             type="number"
             className="w-1 flex-1 text-black"
-            value={set.restTime ?? undefined}
-            disabled={!props.editMode}
+            value={set.restTime ?? ""}
+            disabled={props.mode === "read"}
             onChange={({ target: { value } }) => {
-              props.onUpdate({
+              props.onUpdateSet({
                 ...props,
                 sets: props.sets
                   ?.slice(0, i)
                   .concat(
-                    { ...props.sets.at(i), restTime: Number(value) },
+                    {
+                      ...props.sets.at(i),
+                      restTime: value ? Number(value) : undefined,
+                    },
                     props.sets.slice(i + 1),
                   ),
               });
             }}
           />
-          {editMode && <input type="checkbox" />}
-          {/* <button
-            onClick={() => {
-              props.onUpdate({
-                ...props,
-                sets: props.sets?.slice(0, i).concat(props.sets.slice(i + 1)),
-              });
-            }}
-          >
-            X
-          </button> */}
+          {props.mode === "start" && <input type="checkbox" />}
+          {props.mode == "create" && (
+            <button
+              onClick={() => {
+                props.onUpdateSet({
+                  ...props,
+                  sets: props.sets?.slice(0, i).concat(props.sets.slice(i + 1)),
+                });
+              }}
+            >
+              X
+            </button>
+          )}
         </div>
       ))}
     </div>

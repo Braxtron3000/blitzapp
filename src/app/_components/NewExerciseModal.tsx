@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
 
 //! todo these should come from the db.
 //! and the create modal should be using saved exercises with youtube videos/thumbnails.
@@ -65,12 +65,13 @@ const NewExerciseModal = ({
       </div>
       <button
         className="block rounded-full bg-white/10 px-10 py-3 font-semibold transition hover:bg-white/20 disabled:text-gray-500"
-        onClick={() =>
+        onClick={() => {
           onAdd({
             muscles: selectedMuscles.map((muscle) => ({ name: muscle })),
             title,
-          })
-        }
+          });
+          settitle("");
+        }}
         disabled={!title}
       >
         Add Exercise

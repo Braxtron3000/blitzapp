@@ -14,16 +14,12 @@ type workoutProp = NonNullable<
   Awaited<ReturnType<typeof apiServer.workout.findWorkoutById>>
 >;
 
-const WorkoutInfoId = (
-  props:
-    | { mode: "create"; workout?: undefined }
-    | {
-        mode: "read" | "start";
-        id: string;
-        canEdit: boolean;
-        workout: workoutProp;
-      },
-) => {
+const WorkoutInfoId = (props: {
+  mode: "read" | "start" | "create";
+  id?: number;
+  canEdit?: boolean;
+  workout?: workoutProp;
+}) => {
   // !leave this in for now.
   // const something = api.workout.onWorkoutAdd.useSubscription(undefined, {
   //   onData: (event) => {
@@ -31,10 +27,12 @@ const WorkoutInfoId = (
   //   },
   // });
 
-  const [title, setTitle] = useState(props.workout?.title);
-  const [description, setDescription] = useState(props.workout?.description);
+  const [title, setTitle] = useState(props.workout ? props.workout.title : "");
+  const [description, setDescription] = useState(
+    props.workout ? props.workout.description : "",
+  );
 
-  type workoutNotNull = NonNullable<typeof props.workout>;
+  type workoutNotNull = workoutProp;
   type editingRoutineType = RecursivePartial<
     workoutNotNull["routine"][number]
   >[];
@@ -54,17 +52,47 @@ const WorkoutInfoId = (
 
   const submitWorkouts = api.workout.createWorkout.useMutation({
     onSuccess: async () => {
-      console.log("successful workout creations");
+      console.log("successful workout creation");
       setTitle("");
       setDescription("");
     },
     onError: async (e) => {
-      console.error("error creating workouts", e);
+      console.error("error creating workout", e);
+    },
+  });
+
+  const createWorkout = (
+    overrideParams?: Partial<Parameters<typeof submitWorkouts.mutate>[0]>,
+  ) =>
+    submitWorkouts.mutate({
+      title,
+      description: description ?? "yamaa",
+      routine: routine.map((exercise) => ({
+        exerciseName: exercise.exerciseName ?? "",
+        musclesTargeted:
+          exercise.musclesTargeted?.map(({ name }) => name ?? "") ?? [],
+        sets:
+          exercise.sets?.map((set) => ({
+            weight: set.weight ?? 0,
+            reps: set.reps ?? 0,
+            restTime: set.restTime ?? 1,
+          })) ?? [],
+      })),
+      ...overrideParams,
+    });
+
+  const deleteWorkout = api.workout.deleteWorkout.useMutation({
+    onSuccess: async () => {
+      console.log("successfully deleted workout");
+      router.replace("/");
+    },
+    onError: async (e) => {
+      console.error("error deleting workout, ", e);
     },
   });
 
   const [routine, setRoutine] = useState<editingRoutineType>(
-    props.workout?.routine ?? [],
+    props.workout ? props.workout.routine : [],
   );
 
   const updateExercise = (
@@ -84,47 +112,45 @@ const WorkoutInfoId = (
           <Link href={"/"}>{"<- "}</Link>
           {props.mode}
         </div>
-        <div className="flex flex-row gap-2">
-          <button className="rounded-full bg-purple-500 p-1">Start</button>
-          <button className="rounded-full bg-purple-500 p-1">Copy</button>
-          {props.mode == "read" && props.canEdit && (
-            <>
-              <button className="rounded-full bg-purple-500 p-1">Edit</button>
-              <button className="rounded-full bg-purple-500 p-1">Delete</button>
-            </>
-          )}
-        </div>
+        {props.mode == "read" && props.canEdit && props.id && (
+          <div className="flex flex-row gap-2">
+            <button className="rounded-full bg-purple-500 p-1">Start</button>
+            <button
+              onClick={() => {
+                createWorkout({ title: "Copy -" + title });
+                router.replace("/");
+              }}
+              className="rounded-full bg-purple-500 p-1"
+            >
+              Copy
+            </button>
+            <button className="rounded-full bg-purple-500 p-1">Edit</button>
+            <button
+              onClick={() => {
+                if (!props.id) {
+                  console.error("theres no props id");
+                  return;
+                }
+
+                deleteWorkout.mutate({ id: props.id });
+              }}
+              className="rounded-full bg-purple-500 p-1"
+            >
+              Delete
+            </button>
+          </div>
+        )}
       </header>
       <div className="flex w-full max-w-xs flex-col gap-2">
         <form
           onSubmit={(e) => {
-            if (!description) {
-              console.error("description is ", description);
-              return;
-            }
-
             if (!title) {
               console.error("title is ", title);
               return;
             }
 
             e.preventDefault();
-
-            submitWorkouts.mutate({
-              title,
-              description,
-              routine: routine.map((exercise) => ({
-                exerciseName: exercise.exerciseName ?? "",
-                musclesTargeted:
-                  exercise.musclesTargeted?.map(({ name }) => name ?? "") ?? [],
-                sets:
-                  exercise.sets?.map((set) => ({
-                    weight: set.weight ?? 0,
-                    reps: set.reps ?? 0,
-                    restTime: set.restTime ?? 1,
-                  })) ?? [],
-              })),
-            });
+            createWorkout();
 
             router.push("/");
           }}
@@ -158,9 +184,10 @@ const WorkoutInfoId = (
                 workoutId={exercise.workoutId}
                 workoutLogId={exercise.workoutLogId}
                 sets={exercise.sets}
-                onDelete={() => {}}
-                onUpdate={(exercise) => updateExercise(i, exercise)}
-                editMode={props.mode != "read"}
+                onDeleteSet={() => {}}
+                onUpdateSet={(exercise) => updateExercise(i, exercise)}
+                mode={props.mode}
+                onRemoveExercise={() => {}}
               />
             ))}
           </div>
@@ -170,10 +197,19 @@ const WorkoutInfoId = (
               type="submit"
               disabled={
                 submitWorkouts.isPending ||
-                !description ||
                 !title ||
                 props.mode != "create" ||
-                routine.length == 0
+                routine.length == 0 ||
+                !routine.every(
+                  (exercise) => exercise.sets && exercise.sets?.length > 0,
+                  /*  &&
+                    exercise.sets.every(
+                      ({ reps, restTime, weight }) =>
+                        Number(reps) > 0 &&
+                        Number(restTime) > 0 &&
+                        Number(weight) > 0,
+                    ), */
+                )
               }
             >
               {submitWorkouts.isPending ? "Submitting..." : "Submit"}
