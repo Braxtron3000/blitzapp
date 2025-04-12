@@ -26,27 +26,27 @@ type exerciseProps = RecursivePartial<
 type exerciseCardProps = {
   onDelete: () => void;
   onUpdate: (exercise: exerciseProps) => void;
+  editMode: boolean;
 };
 
 const ExerciseCard = (props: exerciseProps & exerciseCardProps) => {
   const [editMode, setEditMode] = useState(false);
 
-  const addSet = () => {};
-
   return (
-    <div className="flex max-w-xs flex-col gap-4 rounded-xl bg-white/10 p-4">
+    <div className="flex w-full max-w-xs flex-col gap-4 rounded-xl bg-white/10 p-4">
       {editMode ? (
         <input className="text-black" type="text" placeholder="Exercise Name" />
       ) : (
         <h1>{props.exerciseName}</h1>
       )}
-      <p>{JSON.stringify(props)}</p>
-      <button
-        onClick={() => setEditMode(!editMode)}
-        className={`${editMode ? "bg-yellow-500" : "bg-yellow-600"}`}
-      >
-        edit
-      </button>
+      {editMode && (
+        <button
+          onClick={() => setEditMode(!editMode)}
+          className={`${editMode ? "bg-yellow-500" : "bg-yellow-600"}`}
+        >
+          edit
+        </button>
+      )}
 
       {editMode && (
         <div className="flex flex-row justify-between">
@@ -88,7 +88,8 @@ const ExerciseCard = (props: exerciseProps & exerciseCardProps) => {
           <input
             placeholder="reps"
             type="number"
-            className="w-1 flex-1"
+            className="w-1 flex-1 text-black"
+            disabled={!props.editMode}
             onChange={({ target: { value } }) => {
               props.onUpdate({
                 ...props,
@@ -105,8 +106,9 @@ const ExerciseCard = (props: exerciseProps & exerciseCardProps) => {
           <input
             placeholder="weight"
             type="number"
-            className="w-1 flex-1"
+            className="w-1 flex-1 text-black"
             value={set.weight ?? undefined}
+            disabled={!props.editMode}
             onChange={({ target: { value } }) => {
               props.onUpdate({
                 ...props,
@@ -122,8 +124,9 @@ const ExerciseCard = (props: exerciseProps & exerciseCardProps) => {
           <input
             placeholder="restTime"
             type="number"
-            className="w-1 flex-1"
+            className="w-1 flex-1 text-black"
             value={set.restTime ?? undefined}
+            disabled={!props.editMode}
             onChange={({ target: { value } }) => {
               props.onUpdate({
                 ...props,
@@ -136,7 +139,8 @@ const ExerciseCard = (props: exerciseProps & exerciseCardProps) => {
               });
             }}
           />
-          <button
+          {editMode && <input type="checkbox" />}
+          {/* <button
             onClick={() => {
               props.onUpdate({
                 ...props,
@@ -145,7 +149,7 @@ const ExerciseCard = (props: exerciseProps & exerciseCardProps) => {
             }}
           >
             X
-          </button>
+          </button> */}
         </div>
       ))}
     </div>

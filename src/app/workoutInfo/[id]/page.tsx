@@ -1,4 +1,4 @@
-import WorkoutInfoId from "~/app/workoutInfo/WorkoutInfo";
+import WorkoutInfoId from "~/app/_components/WorkoutInfo";
 import { auth } from "~/server/auth";
 import { api } from "~/trpc/server";
 
