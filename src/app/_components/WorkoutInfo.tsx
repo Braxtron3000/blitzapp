@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { api } from "~/trpc/react";
 import { api as apiServer } from "~/trpc/server";
@@ -27,26 +27,18 @@ const WorkoutInfoId = (props: {
   //   },
   // });
 
+  const [stateMode, setStateMode] = useState<typeof props.mode>(props.mode);
   const [title, setTitle] = useState(props.workout ? props.workout.title : "");
   const [description, setDescription] = useState(
     props.workout ? props.workout.description : "",
   );
 
+  const [showConfirmEditModal, setShowConfirmEditModal] = useState(false);
+
   type workoutNotNull = workoutProp;
   type editingRoutineType = RecursivePartial<
     workoutNotNull["routine"][number]
   >[];
-
-  // const submitWorkouts = api.workout.seed.useMutation({
-  //   onSuccess: async () => {
-  //     console.log("successful workout creations");
-  //     setTitle("");
-  //     setDescription("");
-  //   },
-  //   onError: async (e) => {
-  //     console.error("error creating workouts", e);
-  //   },
-  // });
 
   const router = useRouter();
 
@@ -61,12 +53,12 @@ const WorkoutInfoId = (props: {
     },
   });
 
-  const createWorkout = (
+  const createWorkout = async (
     overrideParams?: Partial<Parameters<typeof submitWorkouts.mutate>[0]>,
   ) =>
     submitWorkouts.mutate({
       title,
-      description: description ?? "yamaa",
+      description: description,
       routine: routine.map((exercise) => ({
         exerciseName: exercise.exerciseName ?? "",
         musclesTargeted:
@@ -105,14 +97,19 @@ const WorkoutInfoId = (props: {
     setRoutine(newRoutine);
   };
 
+  const removeExercise = (index: number) => {
+    let newRoutine = [...routine];
+    newRoutine.splice(index);
+    setRoutine(newRoutine);
+  };
+
   return (
     <main className="flex min-h-screen flex-col items-center bg-gradient-to-b from-[#2e026d] to-[#15162c] text-white">
       <header className="just flex w-full flex-row justify-between bg-gray-600 py-3">
         <div>
           <Link href={"/"}>{"<- "}</Link>
-          {props.mode}
         </div>
-        {props.mode == "read" && props.canEdit && props.id && (
+        {stateMode == "read" && props.canEdit && props.id && (
           <div className="flex flex-row gap-2">
             <button className="rounded-full bg-purple-500 p-1">Start</button>
             <button
@@ -124,7 +121,12 @@ const WorkoutInfoId = (props: {
             >
               Copy
             </button>
-            <button className="rounded-full bg-purple-500 p-1">Edit</button>
+            <button
+              onClick={() => setStateMode("create")}
+              className="rounded-full bg-purple-500 p-1"
+            >
+              Edit
+            </button>
             <button
               onClick={() => {
                 if (!props.id) {
@@ -145,14 +147,18 @@ const WorkoutInfoId = (props: {
         <form
           onSubmit={(e) => {
             if (!title) {
-              console.error("title is ", title);
+              console.error("Title is undefined ", title);
               return;
             }
 
             e.preventDefault();
-            createWorkout();
 
-            router.push("/");
+            if (props.mode === "read" && stateMode === "create")
+              setShowConfirmEditModal(true);
+            else {
+              createWorkout();
+              router.push("/");
+            }
           }}
           className="flex flex-col gap-2"
         >
@@ -162,7 +168,7 @@ const WorkoutInfoId = (props: {
               placeholder="Title"
               value={title}
               onChange={(e) => setTitle(e.target.value)}
-              disabled={props.mode === "read"}
+              disabled={stateMode === "read"}
               className="w-full rounded-full px-4 py-2 text-black"
             />
 
@@ -172,7 +178,7 @@ const WorkoutInfoId = (props: {
               rows={3}
               value={description ?? ""}
               onChange={(e) => setDescription(e.target.value)}
-              disabled={props.mode === "read"}
+              disabled={stateMode === "read"}
               className="h-[5rem] w-full resize-none overflow-hidden rounded-2xl px-4 py-2 text-black"
             />
 
@@ -186,29 +192,22 @@ const WorkoutInfoId = (props: {
                 sets={exercise.sets}
                 onDeleteSet={() => {}}
                 onUpdateSet={(exercise) => updateExercise(i, exercise)}
-                mode={props.mode}
-                onRemoveExercise={() => {}}
+                mode={stateMode}
+                onRemoveExercise={() => removeExercise(i)}
               />
             ))}
           </div>
-          {props.mode !== "read" && (
+          {stateMode !== "read" && (
             <button
               className="rounded-full bg-white/10 px-10 py-3 font-semibold transition hover:bg-white/20 disabled:text-gray-500"
               type="submit"
               disabled={
                 submitWorkouts.isPending ||
                 !title ||
-                props.mode != "create" ||
+                stateMode != "create" ||
                 routine.length == 0 ||
                 !routine.every(
                   (exercise) => exercise.sets && exercise.sets?.length > 0,
-                  /*  &&
-                    exercise.sets.every(
-                      ({ reps, restTime, weight }) =>
-                        Number(reps) > 0 &&
-                        Number(restTime) > 0 &&
-                        Number(weight) > 0,
-                    ), */
                 )
               }
             >
@@ -217,7 +216,31 @@ const WorkoutInfoId = (props: {
           )}
         </form>
       </div>
-      {props.mode != "read" && (
+      {showConfirmEditModal && (
+        <div className="absolute z-50 flex h-full w-full items-center justify-center bg-slate-400 bg-opacity-80">
+          <div className="rounded-lg bg-slate-400 p-4">
+            <h1>Are you sure?</h1>
+            <p>editing this workout will delete all previous workout logs</p>
+            <div className="flex flex-row justify-evenly py-4">
+              <button onClick={() => setShowConfirmEditModal(false)}>No</button>
+              <button
+                onClick={() => {
+                  if (!props.id) {
+                    console.error("theres no props id");
+                    return;
+                  }
+                  deleteWorkout.mutateAsync({ id: props.id });
+                  createWorkout();
+                  router.replace("/");
+                }}
+              >
+                Yes
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+      {stateMode != "read" && (
         <NewExerciseModal
           onAdd={({ muscles, title }) => {
             setRoutine([

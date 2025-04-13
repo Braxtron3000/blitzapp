@@ -4,27 +4,10 @@ import {
   protectedProcedure,
   publicProcedure,
 } from "~/server/api/trpc";
-import { Workout } from "@prisma/client";
 
 //subscription helper
 import type { TrackedEnvelope } from "@trpc/server";
 import { isTrackedEnvelope, tracked } from "@trpc/server";
-import EventEmitter, { on } from "events";
-import type { Post } from "@prisma/client";
-
-const ee = new EventEmitter();
-
-//! delete me.
-function getRandomNumber(min: number, max: number) {
-  return Math.floor(Math.random() * (max - min + 1)) + min;
-}
-
-const seedWorktoutTitles = [
-  "back and biceps",
-  "biceps day warmup",
-  "leg day",
-  "hypertrophsy leg day",
-];
 
 export const workoutRouter = createTRPCRouter({
   seed: protectedProcedure.mutation(async ({ ctx, input }) => {
@@ -105,7 +88,7 @@ export const workoutRouter = createTRPCRouter({
     .input(
       z.object({
         title: z.string(),
-        description: z.string(),
+        description: z.string().nullable(),
         routine: z
           .object({
             exerciseName: z.string(),
@@ -231,9 +214,9 @@ export const workoutRouter = createTRPCRouter({
       return exerciseSets;
     }),
 
-  //! this needs to have a limit. this gets all public workouts.
+  //! this needs to have a limit. this gets all public workouts. should use pages and take an input number of the page to get.
   getWorkouts: publicProcedure.query(async ({ ctx }) => {
-    return await ctx.db.workout.findMany();
+    return await ctx.db.workout.findMany({});
   }),
 
   deleteWorkout: publicProcedure
@@ -250,15 +233,170 @@ export const workoutRouter = createTRPCRouter({
           where: { id: input.id },
         }),
         ctx.db.workoutLog.deleteMany({
-          where: { id: input.id },
+          where: { workoutId: input.id },
         }),
         ctx.db.workoutExercise.deleteMany({
-          where: { id: input.id },
+          where: { workoutId: input.id },
         }),
         ctx.db.singleSet.deleteMany({
-          where: { id: input.id },
+          where: { workoutExercise: { workoutId: input.id } },
         }),
       ]);
+    }),
+
+  updateWorkout: protectedProcedure
+    .input(
+      z.object({
+        id: z.number(),
+        title: z.string(),
+        description: z.string().nullable(),
+        routine: z
+          .object({
+            exerciseName: z.string(),
+            musclesTargeted: z.string().array(),
+            sets: z
+              .object({
+                weight: z.number().nullable(),
+                reps: z.number().nullable(),
+                restTime: z.number().nullable(),
+              })
+              .array(),
+          })
+          .array(),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      //! Todo: see unstable_concat. ideally this should call delete then create.
+      try {
+        //CREATE
+        const workouts = await ctx.db.workout.createManyAndReturn({
+          data: [
+            {
+              authorId: ctx.session.user.id,
+              ownerId: ctx.session.user.id,
+              title: input.title,
+              description: input.description,
+            },
+          ],
+          select: {
+            id: true,
+          },
+        });
+
+        let firstindex = workouts.at(0);
+
+        if (!firstindex || !firstindex.id) {
+          console.error("no workout returned");
+
+          return;
+        }
+
+        const workoutLogs = await ctx.db.workoutLog.createManyAndReturn({
+          data: [{ workoutId: firstindex.id }],
+        });
+
+        let workoutLogfirstIndex = workoutLogs.at(0);
+        if (!workoutLogfirstIndex || !workoutLogfirstIndex.id) {
+          console.error("no workoutlog returned");
+          return;
+        }
+
+        const workoutExercises =
+          await ctx.db.workoutExercise.createManyAndReturn({
+            data: input.routine.map((workoutExercise) => {
+              return {
+                workoutId: firstindex!.id, //returns above if its undefined.
+                workoutLogId: workoutLogfirstIndex.id,
+                exerciseName: workoutExercise.exerciseName,
+                // musclesTargeted: workoutExercise.musclesTargeted,
+              };
+            }),
+            select: { id: true },
+          });
+
+        // const workoutExercises = await ctx.db.workoutExercise.createManyAndReturn(
+        //   {
+        //     data: [
+        //       {
+        //         workoutLogId: workoutLogfirstIndex.id,
+        //         exerciseName: ,
+        //         workoutId: firstindex.id,
+        //       },
+        //     ],
+        //     select: { id: true },
+        //   },
+        // );
+
+        workoutExercises.forEach((id, index) =>
+          ctx.db.workoutExercise.update({
+            //! prisma doesnt allow m-t-m fields in create many or update many. might as well update all here.
+            where: { id: id.id },
+            data: {
+              musclesTargeted: {
+                connect:
+                  input.routine
+                    .at(index)
+                    ?.musclesTargeted.map((muscle) => ({ name: muscle })) ?? [],
+              },
+            },
+          }),
+        );
+
+        firstindex = workoutExercises.at(0);
+        if (!workoutExercises || !firstindex || !firstindex.id) {
+          console.error("no workout exercises returned");
+          return;
+        }
+
+        const exerciseSets = await ctx.db.singleSet.createMany({
+          data: workoutExercises.flatMap((id, i) => {
+            const exercise = input.routine.at(i);
+            if (!exercise) {
+              console.warn("no exercise found for id ", id, "at index ", i);
+              return [];
+            } else
+              return exercise.sets.map((set) => {
+                return {
+                  weight: set.weight,
+                  reps: set.reps,
+                  restTime: set.restTime,
+                  workoutExerciseId: id.id,
+                };
+              });
+          }),
+        });
+
+        //DELETE
+
+        console.log("deleted workout ", input.id);
+
+        ctx.db.$transaction([
+          ctx.db.workout.deleteMany({
+            where: { id: input.id },
+          }),
+          ctx.db.workoutLog.deleteMany({
+            where: { workoutId: input.id },
+          }),
+          ctx.db.workoutExercise.deleteMany({
+            where: { workoutId: input.id },
+          }),
+          ctx.db.singleSet.deleteMany({
+            where: { workoutExercise: { workoutId: input.id } },
+          }),
+        ]);
+
+        // ee.emit("add", {
+        //   id: workouts.at(0),
+        //   title: input.title,
+        //   description: input.description,
+        //   authorId: ctx.session.user.id,
+        //   ownerId: ctx.session.user.id,
+        // });
+
+        return exerciseSets;
+      } catch (error) {
+        console.error("error updating workout " + input.id, error);
+      }
     }),
 
   findWorkoutById: publicProcedure
@@ -309,38 +447,6 @@ export const workoutRouter = createTRPCRouter({
   //       yield tracked(workout.id.toString(), workout);
   //     }
   //   }),
-
-  // hello: publicProcedure
-  //   .input(z.object({ text: z.string() }))
-  //   .query(({ input }) => {
-  //     return {
-  //       greeting: `Hello ${input.text}`,
-  //     };
-  //   }),
-
-  // create: protectedProcedure
-  //   .input(z.object({ name: z.string().min(1) }))
-  //   .mutation(async ({ ctx, input }) => {
-  //     return ctx.db.post.create({
-  //       data: {
-  //         name: input.name,
-  //         createdBy: { connect: { id: ctx.session.user.id } },
-  //       },
-  //     });
-  //   }),
-
-  // getLatest: protectedProcedure.query(async ({ ctx }) => {
-  //   const post = await ctx.db.post.findFirst({
-  //     orderBy: { createdAt: "desc" },
-  //     where: { createdBy: { id: ctx.session.user.id } },
-  //   });
-
-  //   return post ?? null;
-  // }),
-
-  // getSecretMessage: protectedProcedure.query(() => {
-  //   return "you can now see this secret message!";
-  // }),
 });
 
 function isAsyncIterable<TValue, TReturn = unknown>(

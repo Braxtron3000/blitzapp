@@ -36,7 +36,13 @@ const ExerciseCard = (props: exerciseProps & exerciseCardProps) => {
   return (
     <div className="flex w-full max-w-xs flex-col gap-4 rounded-xl bg-white/10 p-4">
       {editable && (
-        <button className="h-7 w-7 rounded-full bg-red-500">x</button>
+        <button
+          type="button"
+          onClick={() => props.onRemoveExercise()}
+          className="h-7 w-7 rounded-full bg-red-500"
+        >
+          x
+        </button>
       )}
       <h1>{props.exerciseName}</h1>
 
@@ -96,15 +102,13 @@ const ExerciseCard = (props: exerciseProps & exerciseCardProps) => {
             onChange={({ target: { value } }) => {
               props.onUpdateSet({
                 ...props,
-                sets: props.sets
-                  ?.slice(0, i)
-                  .concat(
-                    {
-                      ...props.sets.at(i),
-                      weight: value ? Number(value) : undefined,
-                    },
-                    props.sets.slice(i + 1),
-                  ),
+                sets: props.sets?.slice(0, i).concat(
+                  {
+                    ...props.sets.at(i),
+                    weight: value ? Number(value) : undefined,
+                  },
+                  props.sets.slice(i + 1),
+                ),
               });
             }}
           />
@@ -117,21 +121,20 @@ const ExerciseCard = (props: exerciseProps & exerciseCardProps) => {
             onChange={({ target: { value } }) => {
               props.onUpdateSet({
                 ...props,
-                sets: props.sets
-                  ?.slice(0, i)
-                  .concat(
-                    {
-                      ...props.sets.at(i),
-                      restTime: value ? Number(value) : undefined,
-                    },
-                    props.sets.slice(i + 1),
-                  ),
+                sets: props.sets?.slice(0, i).concat(
+                  {
+                    ...props.sets.at(i),
+                    restTime: value ? Number(value) : undefined,
+                  },
+                  props.sets.slice(i + 1),
+                ),
               });
             }}
           />
           {props.mode === "start" && <input type="checkbox" />}
           {props.mode == "create" && (
             <button
+              type="button"
               onClick={() => {
                 props.onUpdateSet({
                   ...props,
