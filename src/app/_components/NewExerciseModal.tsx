@@ -30,7 +30,7 @@ const NewExerciseModal = ({
   //   const [url, setUrl] = useState(""); //! not gonna worry about the url rn.
 
   return (
-    <div className="absolute bottom-0 z-10 flex w-full flex-col items-center gap-2 rounded-t-3xl bg-stone-700 py-4">
+    <div className="fixed bottom-0 z-10 flex w-full flex-col items-center gap-2 rounded-t-3xl bg-stone-700 py-4">
       <input
         type="text"
         placeholder="exercise name"

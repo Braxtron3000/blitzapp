@@ -1,14 +1,14 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { api } from "~/trpc/react";
 import { api as apiServer } from "~/trpc/server";
 import NewExerciseModal from "./NewExerciseModal";
 import ExerciseCard from "./ExerciseCard";
 import { RecursivePartial } from "~/constants/types";
-import { set } from "zod";
 import Link from "next/link";
+import RestTimer from "./RestTimer";
 
 type workoutProp = NonNullable<
   Awaited<ReturnType<typeof apiServer.workout.findWorkoutById>>
@@ -34,6 +34,11 @@ const WorkoutInfoId = (props: {
   );
 
   const [showConfirmEditModal, setShowConfirmEditModal] = useState(false);
+  const [timerSeconds, setTimerSeconds] = useState<{
+    seconds: number;
+    setIndex: number;
+    exerciseIndex: number;
+  }>();
 
   type workoutNotNull = workoutProp;
   type editingRoutineType = RecursivePartial<
@@ -105,13 +110,20 @@ const WorkoutInfoId = (props: {
 
   return (
     <main className="flex min-h-screen flex-col items-center bg-gradient-to-b from-[#2e026d] to-[#15162c] text-white">
-      <header className="just flex w-full flex-row justify-between bg-gray-600 py-3">
+      <header
+        className={`just flex w-full flex-row justify-between bg-gray-600 py-3`}
+      >
         <div>
           <Link href={"/"}>{"<- "}</Link>
         </div>
         {stateMode == "read" && props.canEdit && props.id && (
           <div className="flex flex-row gap-2">
-            <button className="rounded-full bg-purple-500 p-1">Start</button>
+            <button
+              onClick={() => setStateMode("start")}
+              className="rounded-full bg-purple-500 p-1"
+            >
+              Start
+            </button>
             <button
               onClick={() => {
                 createWorkout({ title: "Copy -" + title });
@@ -142,6 +154,12 @@ const WorkoutInfoId = (props: {
             </button>
           </div>
         )}
+        {stateMode == "start" && (
+          <RestTimer
+            seconds={timerSeconds}
+            notify={() => alert("get back to your workout")}
+          />
+        )}
       </header>
       <div className="flex w-full max-w-xs flex-col gap-2">
         <form
@@ -168,7 +186,7 @@ const WorkoutInfoId = (props: {
               placeholder="Title"
               value={title}
               onChange={(e) => setTitle(e.target.value)}
-              disabled={stateMode === "read"}
+              disabled={stateMode !== "create"}
               className="w-full rounded-full px-4 py-2 text-black"
             />
 
@@ -178,7 +196,7 @@ const WorkoutInfoId = (props: {
               rows={3}
               value={description ?? ""}
               onChange={(e) => setDescription(e.target.value)}
-              disabled={stateMode === "read"}
+              disabled={stateMode !== "create"}
               className="h-[5rem] w-full resize-none overflow-hidden rounded-2xl px-4 py-2 text-black"
             />
 
@@ -190,10 +208,16 @@ const WorkoutInfoId = (props: {
                 workoutId={exercise.workoutId}
                 workoutLogId={exercise.workoutLogId}
                 sets={exercise.sets}
-                onDeleteSet={() => {}}
                 onUpdateSet={(exercise) => updateExercise(i, exercise)}
                 mode={stateMode}
                 onRemoveExercise={() => removeExercise(i)}
+                onCheckBox={({ minutes, index: setIndex }) =>
+                  setTimerSeconds({
+                    seconds: minutes * 60,
+                    exerciseIndex: i,
+                    setIndex,
+                  })
+                }
               />
             ))}
           </div>
@@ -214,6 +238,7 @@ const WorkoutInfoId = (props: {
               {submitWorkouts.isPending ? "Submitting..." : "Submit"}
             </button>
           )}
+          <div className="h-80" />
         </form>
       </div>
       {showConfirmEditModal && (

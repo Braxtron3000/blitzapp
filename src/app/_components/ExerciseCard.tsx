@@ -24,18 +24,41 @@ type exerciseProps = RecursivePartial<
 >;
 
 type exerciseCardProps = {
-  onDeleteSet: () => void;
   onUpdateSet: (exercise: exerciseProps) => void;
   onRemoveExercise: () => void;
   mode: "read" | "create" | "start";
+  onCheckBox: (param: { minutes: number; index: number }) => void;
 };
 
 const ExerciseCard = (props: exerciseProps & exerciseCardProps) => {
   const editable = props.mode != "read";
 
+  const [checkedSetIndexes, setCheckedSetIndexes] = useState<number[]>([]);
+  const uncheckSet = (index: number) => {
+    setCheckedSetIndexes(
+      checkedSetIndexes.filter((setIndex) => setIndex != index),
+    );
+  };
+
+  const checkSet = (index: number) => {
+    setCheckedSetIndexes(checkedSetIndexes.concat(index));
+  };
+
+  const toggleCheckbox = (index: number) => {
+    if (checkedSetIndexes.includes(index)) {
+      uncheckSet(index);
+    } else {
+      checkSet(index);
+      props.onCheckBox({
+        minutes: props.sets?.at(index)?.restTime ?? 1,
+        index,
+      });
+    }
+  };
+
   return (
     <div className="flex w-full max-w-xs flex-col gap-4 rounded-xl bg-white/10 p-4">
-      {editable && (
+      {editable && props.mode != "start" && (
         <button
           type="button"
           onClick={() => props.onRemoveExercise()}
@@ -45,7 +68,7 @@ const ExerciseCard = (props: exerciseProps & exerciseCardProps) => {
         </button>
       )}
       <h1>{props.exerciseName}</h1>
-
+      <h2>{checkedSetIndexes.toString()}</h2>
       {editable && (
         <button
           className="rounded-full bg-green-600 hover:bg-green-500"
@@ -131,7 +154,9 @@ const ExerciseCard = (props: exerciseProps & exerciseCardProps) => {
               });
             }}
           />
-          {props.mode === "start" && <input type="checkbox" />}
+          {props.mode === "start" && (
+            <input type="checkbox" onClick={() => toggleCheckbox(i)} />
+          )}
           {props.mode == "create" && (
             <button
               type="button"
