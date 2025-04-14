@@ -173,7 +173,10 @@ const WorkoutInfoId = (props: {
 
             if (props.mode === "read" && stateMode === "create")
               setShowConfirmEditModal(true);
-            else {
+            else if (props.mode == "read" && stateMode === "start") {
+              console.log("log workouts. if i can.");
+              router.push("/");
+            } else {
               createWorkout();
               router.push("/");
             }
