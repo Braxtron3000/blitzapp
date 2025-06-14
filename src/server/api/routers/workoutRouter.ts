@@ -61,7 +61,7 @@ export const workoutRouter = createTRPCRouter({
     });
 
     firstindex = workoutExercises.at(0);
-    if (!firstindex || !firstindex.id) {
+    if (!firstindex?.id) {
       console.error("no workout exercises returned");
       return;
     }
@@ -151,19 +151,6 @@ export const workoutRouter = createTRPCRouter({
         },
       );
 
-      // const workoutExercises = await ctx.db.workoutExercise.createManyAndReturn(
-      //   {
-      //     data: [
-      //       {
-      //         workoutLogId: workoutLogfirstIndex.id,
-      //         exerciseName: ,
-      //         workoutId: firstindex.id,
-      //       },
-      //     ],
-      //     select: { id: true },
-      //   },
-      // );
-
       workoutExercises.forEach((id, index) =>
         ctx.db.workoutExercise.update({
           //! prisma doesnt allow m-t-m fields in create many or update many. might as well update all here.
@@ -202,14 +189,6 @@ export const workoutRouter = createTRPCRouter({
             });
         }),
       });
-
-      // ee.emit("add", {
-      //   id: workouts.at(0),
-      //   title: input.title,
-      //   description: input.description,
-      //   authorId: ctx.session.user.id,
-      //   ownerId: ctx.session.user.id,
-      // });
 
       return exerciseSets;
     }),

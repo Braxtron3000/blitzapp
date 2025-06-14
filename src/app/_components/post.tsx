@@ -5,29 +5,6 @@ import { useRouter } from "next/navigation";
 import { api } from "~/trpc/react";
 
 export function LatestPost() {
-  const [latestPost] = api.post.getLatest.useSuspenseQuery();
-
-  const utils = api.useUtils();
-  const [name, setName] = useState("");
-  const createPost = api.post.create.useMutation({
-    onSuccess: async () => {
-      await utils.post.invalidate();
-      setName("");
-    },
-  });
-
-  const workouts = api.workout.getWorkouts.useQuery();
-
-  const [workoutsState, setWorkoutsState] = useState<
-    {
-      description: string | null;
-      id: number;
-      title: string;
-      authorId: string;
-      ownerId: string;
-    }[]
-  >(workouts.data ?? []);
-
   // !leave this in for now.
   // const something = api.workout.onWorkoutAdd.useSubscription(undefined, {
   //   onData: (event) => {
@@ -64,12 +41,6 @@ export function LatestPost() {
 
   return (
     <div className="flex w-full max-w-xs flex-col gap-2">
-      {latestPost ? (
-        <p className="truncate">Your most recent post: {latestPost.name}</p>
-      ) : (
-        <p>You have no posts yet.</p>
-      )}
-
       <form
         onSubmit={(e) => {
           e.preventDefault();

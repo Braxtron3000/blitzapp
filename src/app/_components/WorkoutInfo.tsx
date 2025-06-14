@@ -3,10 +3,10 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { api } from "~/trpc/react";
-import { api as apiServer } from "~/trpc/server";
+import { type api as apiServer } from "~/trpc/server";
 import NewExerciseModal from "./NewExerciseModal";
 import ExerciseCard from "./ExerciseCard";
-import { RecursivePartial } from "~/constants/types";
+import { type RecursivePartial } from "~/constants/types";
 import Link from "next/link";
 import RestTimer from "./RestTimer";
 
@@ -96,14 +96,14 @@ const WorkoutInfoId = (props: {
     index: number,
     exercise: (typeof routine)[number],
   ) => {
-    let newRoutine = [...routine];
+    const newRoutine = [...routine];
     newRoutine.splice(index, 1, exercise);
     console.log("new exercise ", exercise);
     setRoutine(newRoutine);
   };
 
   const removeExercise = (index: number) => {
-    let newRoutine = [...routine];
+    const newRoutine = [...routine];
     newRoutine.splice(index);
     setRoutine(newRoutine);
   };
@@ -125,8 +125,8 @@ const WorkoutInfoId = (props: {
               Start
             </button>
             <button
-              onClick={() => {
-                createWorkout({ title: "Copy -" + title });
+              onClick={async () => {
+                await createWorkout({ title: "Copy -" + title });
                 router.replace("/");
               }}
               className="rounded-full bg-purple-500 p-1"
@@ -163,7 +163,7 @@ const WorkoutInfoId = (props: {
       </header>
       <div className="flex w-full max-w-xs flex-col gap-2">
         <form
-          onSubmit={(e) => {
+          onSubmit={async (e) => {
             if (!title) {
               console.error("Title is undefined ", title);
               return;
@@ -177,7 +177,7 @@ const WorkoutInfoId = (props: {
               console.log("log workouts. if i can.");
               router.push("/");
             } else {
-              createWorkout();
+              await createWorkout();
               router.push("/");
             }
           }}
@@ -252,13 +252,13 @@ const WorkoutInfoId = (props: {
             <div className="flex flex-row justify-evenly py-4">
               <button onClick={() => setShowConfirmEditModal(false)}>No</button>
               <button
-                onClick={() => {
+                onClick={async () => {
                   if (!props.id) {
                     console.error("theres no props id");
                     return;
                   }
-                  deleteWorkout.mutateAsync({ id: props.id });
-                  createWorkout();
+                  await deleteWorkout.mutateAsync({ id: props.id });
+                  await createWorkout();
                   router.replace("/");
                 }}
               >
