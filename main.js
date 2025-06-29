@@ -7,7 +7,7 @@ const createWindow = () => {
   });
 
   // eslint-disable-next-line @typescript-eslint/no-floating-promises
-  win.loadURL("http://localhost:3000");
+  win.loadURL("http://localhost:3000"); //TODO: use env var here.
   //   win.loadFile("index.html");
 };
 
