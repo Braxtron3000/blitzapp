@@ -51,11 +51,13 @@ const NewExerciseModal = ({
           <button
             key={i.toString()}
             onClick={() => {
-              selectedMuscles.includes(muscle)
-                ? setSelectedMuscles(
-                    selectedMuscles.filter((item) => item != muscle),
-                  )
-                : setSelectedMuscles([...selectedMuscles, muscle]);
+              if (selectedMuscles.includes(muscle)) {
+                setSelectedMuscles(
+                  selectedMuscles.filter((item) => item != muscle),
+                );
+              } else {
+                setSelectedMuscles([...selectedMuscles, muscle]);
+              }
             }}
             className={`rounded-3xl ${selectedMuscles.includes(muscle) ? "bg-yellow-300" : "bg-yellow-100"} px-4 py-1 text-black`}
           >

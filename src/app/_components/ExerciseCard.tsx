@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { RecursivePartial } from "~/constants/types";
+import type { RecursivePartial } from "~/constants/types";
 
 type exerciseProps = RecursivePartial<
   {
