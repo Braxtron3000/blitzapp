@@ -28,7 +28,7 @@ export const workoutRouter = createTRPCRouter({
 
     let firstindex = workouts.at(0);
 
-    if (!firstindex || !firstindex.id) {
+    if (!firstindex?.id) {
       console.error("no workout returned");
 
       return;
@@ -38,8 +38,8 @@ export const workoutRouter = createTRPCRouter({
       data: [{ workoutId: firstindex.id }],
     });
 
-    let workoutLogfirstIndex = workoutLogs.at(0);
-    if (!workoutLogfirstIndex || !workoutLogfirstIndex.id) {
+    const workoutLogfirstIndex = workoutLogs.at(0);
+    if (!workoutLogfirstIndex?.id) {
       console.error("no workoutlog returned");
       return;
     }
@@ -121,7 +121,7 @@ export const workoutRouter = createTRPCRouter({
 
       let firstindex = workouts.at(0);
 
-      if (!firstindex || !firstindex.id) {
+      if (!firstindex?.id) {
         console.error("no workout returned");
 
         return;
@@ -131,8 +131,8 @@ export const workoutRouter = createTRPCRouter({
         data: [{ workoutId: firstindex.id }],
       });
 
-      let workoutLogfirstIndex = workoutLogs.at(0);
-      if (!workoutLogfirstIndex || !workoutLogfirstIndex.id) {
+      const workoutLogfirstIndex = workoutLogs.at(0);
+      if (!workoutLogfirstIndex?.id) {
         console.error("no workoutlog returned");
         return;
       }
@@ -151,6 +151,7 @@ export const workoutRouter = createTRPCRouter({
         },
       );
 
+      // eslint-disable-next-line @typescript-eslint/no-misused-promises
       workoutExercises.forEach((id, index) =>
         ctx.db.workoutExercise.update({
           //! prisma doesnt allow m-t-m fields in create many or update many. might as well update all here.
@@ -167,7 +168,7 @@ export const workoutRouter = createTRPCRouter({
       );
 
       firstindex = workoutExercises.at(0);
-      if (!workoutExercises || !firstindex || !firstindex.id) {
+      if (!workoutExercises || !firstindex?.id) {
         console.error("no workout exercises returned");
         return;
       }
@@ -264,7 +265,7 @@ export const workoutRouter = createTRPCRouter({
 
         let firstindex = workouts.at(0);
 
-        if (!firstindex || !firstindex.id) {
+        if (!firstindex?.id) {
           console.error("no workout returned");
 
           return;
@@ -274,8 +275,8 @@ export const workoutRouter = createTRPCRouter({
           data: [{ workoutId: firstindex.id }],
         });
 
-        let workoutLogfirstIndex = workoutLogs.at(0);
-        if (!workoutLogfirstIndex || !workoutLogfirstIndex.id) {
+        const workoutLogfirstIndex = workoutLogs.at(0);
+        if (!workoutLogfirstIndex?.id) {
           console.error("no workoutlog returned");
           return;
         }
@@ -287,25 +288,12 @@ export const workoutRouter = createTRPCRouter({
                 workoutId: firstindex!.id, //returns above if its undefined.
                 workoutLogId: workoutLogfirstIndex.id,
                 exerciseName: workoutExercise.exerciseName,
-                // musclesTargeted: workoutExercise.musclesTargeted,
               };
             }),
             select: { id: true },
           });
 
-        // const workoutExercises = await ctx.db.workoutExercise.createManyAndReturn(
-        //   {
-        //     data: [
-        //       {
-        //         workoutLogId: workoutLogfirstIndex.id,
-        //         exerciseName: ,
-        //         workoutId: firstindex.id,
-        //       },
-        //     ],
-        //     select: { id: true },
-        //   },
-        // );
-
+        // eslint-disable-next-line @typescript-eslint/no-misused-promises
         workoutExercises.forEach((id, index) =>
           ctx.db.workoutExercise.update({
             //! prisma doesnt allow m-t-m fields in create many or update many. might as well update all here.
@@ -322,7 +310,7 @@ export const workoutRouter = createTRPCRouter({
         );
 
         firstindex = workoutExercises.at(0);
-        if (!workoutExercises || !firstindex || !firstindex.id) {
+        if (!workoutExercises || !firstindex?.id) {
           console.error("no workout exercises returned");
           return;
         }
@@ -349,7 +337,7 @@ export const workoutRouter = createTRPCRouter({
 
         console.log("deleted workout ", input.id);
 
-        ctx.db.$transaction([
+        await ctx.db.$transaction([
           ctx.db.workout.deleteMany({
             where: { id: input.id },
           }),
@@ -451,11 +439,13 @@ export function zAsyncIterable<
   /**
    * Validate the value yielded by the async generator
    */
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   yield: z.ZodType<TYieldIn, any, TYieldOut>;
   /**
    * Validate the return value of the async generator
    * @remark not applicable for subscriptions
    */
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   return?: z.ZodType<TReturnIn, any, TReturnOut>;
   /**
    * Whether if the yielded values are tracked
@@ -495,6 +485,7 @@ export function zAsyncIterable<
       TReturnIn,
       unknown
     >,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     any,
     AsyncIterable<
       Tracked extends true ? TrackedEnvelope<TYieldOut> : TYieldOut,
