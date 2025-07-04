@@ -19,14 +19,16 @@ export default async function Home() {
           <h1 className="text-5xl font-extrabold tracking-tight sm:text-[5rem]">
             Create <span className="text-[hsl(280,100%,70%)]">T3</span> App
           </h1>
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:gap-8">
-            <Link
-              href={"/workoutInfo"}
-              className="top-0 rounded-full bg-white/10 px-10 py-3 font-semibold no-underline transition hover:bg-white/20"
-            >
-              Create Workout
-            </Link>
-          </div>
+          {session?.user && (
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:gap-8">
+              <Link
+                href={"/workoutInfo"}
+                className="top-0 rounded-full bg-white/10 px-10 py-3 font-semibold no-underline transition hover:bg-white/20"
+              >
+                Create Workout
+              </Link>
+            </div>
+          )}
           <div className="flex flex-col items-center gap-2">
             <p className="text-2xl text-white">
               {hello ? hello.greeting : "Loading tRPC query..."}
