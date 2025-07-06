@@ -231,7 +231,6 @@ const WorkoutInfoId = (props: {
               disabled={
                 submitWorkouts.isPending ||
                 !title ||
-                stateMode != "create" ||
                 routine.length == 0 ||
                 !routine.every(
                   (exercise) => exercise.sets && exercise.sets?.length > 0,
