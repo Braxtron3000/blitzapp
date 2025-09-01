@@ -48,12 +48,14 @@ export const authConfig = {
      * @see https://next-auth.js.org/providers/github
      */
   ],
+
   adapter: PrismaAdapter(db),
   callbacks: {
     session: ({ session, user }) => ({
       ...session,
       user: {
         ...session.user,
+        image: user.image,
         id: user.id,
       },
     }),

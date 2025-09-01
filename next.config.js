@@ -10,6 +10,17 @@ const config = {
     ignoreDuringBuilds: true, //! change this back after actual deploy.
     dirs: ["src"],
   },
+  images: {
+    // remotePatterns: [new URL("https://lh3.googleusercontent.com/**")],
+
+    remotePatterns: [
+      {
+        protocol: "https",
+        hostname: "lh3.googleusercontent.com",
+        pathname: "**",
+      },
+    ],
+  },
   //   output: "export", //! enable this if fully doing offline for android/ios.
 };
 

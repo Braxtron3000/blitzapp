@@ -111,16 +111,24 @@ const WorkoutInfoId = (props: {
   return (
     <main className="flex min-h-screen flex-col items-center bg-gradient-to-b from-[#2e026d] to-[#15162c] text-white">
       <header
-        className={`just flex w-full flex-row justify-between bg-gray-600 py-3`}
+        className={`just flex h-20 w-full flex-row justify-between bg-gray-600 px-4 py-4`}
       >
-        <div>
-          <Link href={"/"}>{"<- "}</Link>
+        <div className="flex items-center justify-center">
+          <button
+            onClick={() => router.replace("/")}
+            className="h-16 w-16 items-center justify-center rounded-full bg-slate-400"
+          >
+            {"<-"}
+          </button>
+        </div>
+        <div className="flex h-full flex-grow items-center justify-center">
+          <h1 className="text-4xl font-bold">{title}</h1>
         </div>
         {stateMode == "read" && props.canEdit && props.id && (
           <div className="flex flex-row gap-2">
             <button
               onClick={() => setStateMode("start")}
-              className="rounded-full bg-purple-500 p-1"
+              className="flex items-center justify-center rounded-xl bg-purple-500 p-4 text-center"
             >
               Start
             </button>
@@ -129,13 +137,13 @@ const WorkoutInfoId = (props: {
                 await createWorkout({ title: "Copy -" + title });
                 router.replace("/");
               }}
-              className="rounded-full bg-purple-500 p-1"
+              className="flex items-center justify-center rounded-xl bg-purple-500 p-4"
             >
               Copy
             </button>
             <button
               onClick={() => setStateMode("create")}
-              className="rounded-full bg-purple-500 p-1"
+              className="flex items-center justify-center rounded-xl bg-purple-500 p-4"
             >
               Edit
             </button>
@@ -148,7 +156,7 @@ const WorkoutInfoId = (props: {
 
                 deleteWorkout.mutate({ id: props.id });
               }}
-              className="rounded-full bg-purple-500 p-1"
+              className="flex items-center justify-center rounded-xl bg-purple-500 p-4"
             >
               Delete
             </button>
@@ -161,7 +169,7 @@ const WorkoutInfoId = (props: {
           />
         )}
       </header>
-      <div className="flex w-full max-w-xs flex-col gap-2">
+      <div className="container flex w-full max-w-xs flex-col gap-2 py-16">
         <form
           onSubmit={async (e) => {
             if (!title) {
@@ -181,7 +189,7 @@ const WorkoutInfoId = (props: {
               router.push("/");
             }
           }}
-          className="flex flex-col gap-2"
+          className="flex h-full w-full flex-col gap-2"
         >
           <div className="flex flex-col gap-2">
             <input
@@ -231,7 +239,6 @@ const WorkoutInfoId = (props: {
               disabled={
                 submitWorkouts.isPending ||
                 !title ||
-                stateMode != "create" ||
                 routine.length == 0 ||
                 !routine.every(
                   (exercise) => exercise.sets && exercise.sets?.length > 0,
