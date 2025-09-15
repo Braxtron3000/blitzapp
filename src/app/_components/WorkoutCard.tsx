@@ -9,7 +9,7 @@ const WorkoutCard = ({
 }) => {
   return (
     <div>
-      <div className={"w-full rounded-xl bg-[#1f8fff] pb-[95%]"} />
+      <div className={"w-full rounded-xl bg-[#f4d35e] pb-[95%]"} />
       <h1>{workout.title}</h1>
       <h3>{workout.description}</h3>
     </div>

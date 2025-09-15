@@ -7,7 +7,6 @@ import { type api as apiServer } from "~/trpc/server";
 import NewExerciseModal from "./NewExerciseModal";
 import ExerciseCard from "./ExerciseCard";
 import { type RecursivePartial } from "~/constants/types";
-import Link from "next/link";
 import RestTimer from "./RestTimer";
 
 type workoutProp = NonNullable<
@@ -109,14 +108,14 @@ const WorkoutInfoId = (props: {
   };
 
   return (
-    <main className="flex min-h-screen flex-col items-center bg-gradient-to-b from-[#2e026d] to-[#15162c] text-white">
+    <main className="flex min-h-screen flex-col items-center bg-gradient-to-b from-[#2290F7] to-[#0d3b66] text-white">
       <header
-        className={`just flex h-20 w-full flex-row justify-between bg-gray-600 px-4 py-4`}
+        className={`just flex h-20 w-full flex-row justify-between bg-[#0d3b66] px-4 py-4`}
       >
         <div className="flex items-center justify-center">
           <button
             onClick={() => router.replace("/")}
-            className="h-16 w-16 items-center justify-center rounded-full bg-slate-400"
+            className="h-16 w-16 items-center justify-center rounded-full"
           >
             {"<-"}
           </button>
