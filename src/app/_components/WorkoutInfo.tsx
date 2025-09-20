@@ -7,7 +7,6 @@ import { type api as apiServer } from "~/trpc/server";
 import NewExerciseModal from "./NewExerciseModal";
 import ExerciseCard from "./ExerciseCard";
 import { type RecursivePartial } from "~/constants/types";
-import Link from "next/link";
 import RestTimer from "./RestTimer";
 
 type workoutProp = NonNullable<
@@ -20,13 +19,6 @@ const WorkoutInfoId = (props: {
   canEdit?: boolean;
   workout?: workoutProp;
 }) => {
-  // !leave this in for now.
-  // const something = api.workout.onWorkoutAdd.useSubscription(undefined, {
-  //   onData: (event) => {
-  //     setWorkoutsState((prev) => [...prev, event.data]);
-  //   },
-  // });
-
   const [stateMode, setStateMode] = useState<typeof props.mode>(props.mode);
   const [title, setTitle] = useState(props.workout ? props.workout.title : "");
   const [description, setDescription] = useState(
@@ -109,26 +101,26 @@ const WorkoutInfoId = (props: {
   };
 
   return (
-    <main className="flex min-h-screen flex-col items-center bg-gradient-to-b from-[#2e026d] to-[#15162c] text-white">
+    <main className="flex min-h-screen flex-col items-center bg-gradient-to-b from-[#2290F7] to-[#0d3b66] text-white">
       <header
-        className={`just flex h-20 w-full flex-row justify-between bg-gray-600 px-4 py-4`}
+        className={`just z-50 flex h-20 w-full flex-row flex-wrap items-center justify-center justify-between bg-[#0d3b66]`}
       >
         <div className="flex items-center justify-center">
           <button
             onClick={() => router.replace("/")}
-            className="h-16 w-16 items-center justify-center rounded-full bg-slate-400"
+            className="h-16 w-16 items-center justify-center rounded-full"
           >
             {"<-"}
           </button>
         </div>
         <div className="flex h-full flex-grow items-center justify-center">
-          <h1 className="text-4xl font-bold">{title}</h1>
+          <h1 className="whitespace-nowrap text-4xl font-bold">{title}</h1>
         </div>
         {stateMode == "read" && props.canEdit && props.id && (
-          <div className="flex flex-row gap-2">
+          <div className="flex grow flex-row justify-evenly">
             <button
               onClick={() => setStateMode("start")}
-              className="flex items-center justify-center rounded-xl bg-purple-500 p-4 text-center"
+              className="flex items-center justify-center rounded-xl bg-[#f4d35e] p-4 text-center text-[#2290F7]"
             >
               Start
             </button>
@@ -137,13 +129,13 @@ const WorkoutInfoId = (props: {
                 await createWorkout({ title: "Copy -" + title });
                 router.replace("/");
               }}
-              className="flex items-center justify-center rounded-xl bg-purple-500 p-4"
+              className="flex items-center justify-center rounded-xl bg-[#f4d35e] p-4 text-[#2290F7]"
             >
               Copy
             </button>
             <button
               onClick={() => setStateMode("create")}
-              className="flex items-center justify-center rounded-xl bg-purple-500 p-4"
+              className="flex items-center justify-center rounded-xl bg-[#f4d35e] p-4 text-[#2290F7]"
             >
               Edit
             </button>
@@ -156,7 +148,7 @@ const WorkoutInfoId = (props: {
 
                 deleteWorkout.mutate({ id: props.id });
               }}
-              className="flex items-center justify-center rounded-xl bg-purple-500 p-4"
+              className="flex items-center justify-center rounded-xl bg-[#f4d35e] p-4 text-[#2290F7]"
             >
               Delete
             </button>

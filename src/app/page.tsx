@@ -11,10 +11,9 @@ export default async function Home() {
 
   return (
     <HydrateClient>
-      <div className="bg-gradient-to-b from-[#2e026d] to-[#15162c]">
-        <header className="flex w-full justify-center">
-          <div className="container flex h-16 w-full flex-row items-center gap-4">
-            {/* <input type="search" className="h-12 grow rounded-3xl" /> */}
+      <div className="min-h-screen w-full items-center justify-center bg-gradient-to-b from-[#2290F7] to-[#0d3b66] py-4">
+        <header className="flex w-full justify-center px-4">
+          <div className="container flex h-16 w-full flex-row items-center justify-end gap-4">
             {session?.user.image && (
               <Link href={"/api/auth/signout"}>
                 <Image
@@ -26,13 +25,16 @@ export default async function Home() {
                 />
               </Link>
             )}
-            {!session && <Link href={"/api/auth/signin"}>Sign in</Link>}
+            {!session && (
+              <Link className="text-white" href={"/api/auth/signin"}>
+                Sign in
+              </Link>
+            )}
           </div>
         </header>
-        <main className="flex min-h-screen w-full flex-col items-center text-white">
+        <main className="flex min-h-screen w-full flex-col items-center px-4 text-white">
           <div className="container flex w-full flex-col items-center justify-center py-16">
-            {/* <div className="flex max-w-xs flex-col gap-4 rounded-xl bg-white/10 p-4"> */}
-            <div className="bgred grid w-full grid-cols-3 justify-items-stretch gap-4 md:grid-cols-4 xl:grid-cols-6">
+            <div className="grid w-full grid-cols-3 justify-items-stretch gap-4 md:grid-cols-4 xl:grid-cols-6">
               {workouts.map((workout, i) => (
                 <Link key={i} id={i + ""} href={`/workoutInfo/${workout.id}`}>
                   <WorkoutCard workout={workout} />
@@ -41,16 +43,14 @@ export default async function Home() {
             </div>
           </div>
         </main>
-        <nav>
+        <nav className="fixed bottom-4 flex w-full items-center justify-center self-center">
           {session?.user && (
-            // <div className=" grid grid-cols-1 gap-4 sm:grid-cols-2 md:gap-8">
             <Link
               href={"/workoutInfo"}
-              className="fixed bottom-4 right-4 rounded-full bg-white/10 px-10 py-3 font-semibold no-underline transition hover:bg-white/20"
+              className="rounded-full bg-[#2290F7] px-10 py-3 font-semibold text-white no-underline transition hover:bg-white/20"
             >
               Create Workout
             </Link>
-            // </div>
           )}
         </nav>
       </div>
