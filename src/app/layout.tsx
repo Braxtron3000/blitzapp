@@ -1,5 +1,5 @@
 import "~/styles/globals.css";
-
+import { AppRouterCacheProvider } from "@mui/material-nextjs/v15-appRouter";
 import { GeistSans } from "geist/font/sans";
 import { type Metadata } from "next";
 
@@ -17,7 +17,9 @@ export default function RootLayout({
   return (
     <html lang="en" className={`${GeistSans.variable}`}>
       <body>
-        <TRPCReactProvider>{children}</TRPCReactProvider>
+        <AppRouterCacheProvider>
+          <TRPCReactProvider>{children}</TRPCReactProvider>
+        </AppRouterCacheProvider>
       </body>
     </html>
   );
