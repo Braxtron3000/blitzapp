@@ -3,21 +3,31 @@ import { auth } from "~/server/auth";
 import { api, HydrateClient } from "~/trpc/server";
 import WorkoutCard from "./_components/WorkoutCard";
 import Image from "next/image";
+import Button from "@mui/material/Button";
 
 export default async function Home() {
   const session = await auth();
 
   const workouts = await api.workout.getWorkouts();
+  const tags = await api.workout.getAllTags();
 
   return (
     <HydrateClient>
-      <div className="min-h-screen w-full items-center justify-center bg-gradient-to-b from-[#2290F7] to-[#0d3b66] py-4">
+      <div className="bg-background min-h-screen w-full items-center justify-center py-4">
         <header className="flex w-full justify-center px-4">
-          <div className="container flex h-16 w-full flex-row items-center justify-end gap-4">
+          <div className="container flex h-16 w-full flex-row items-center justify-center gap-4">
+            <div className="bg-surface text-text flex w-1/2 flex-grow items-center rounded-full px-4 py-2">
+              <input
+                type="text"
+                placeholder="Search..."
+                className="flex-1 bg-transparent outline-none placeholder:text-white"
+              />
+            </div>
+
             {session?.user.image && (
-              <Link href={"/api/auth/signout"}>
+              <Link className="block shrink" href={"/api/auth/signout"}>
                 <Image
-                  className="h-12 w-12 rounded-full"
+                  className="h-10 w-10 rounded-full"
                   src={session.user.image}
                   alt="user image"
                   width={100}
@@ -34,7 +44,7 @@ export default async function Home() {
         </header>
         <main className="flex min-h-screen w-full flex-col items-center px-4 text-white">
           <div className="container flex w-full flex-col items-center justify-center py-16">
-            <div className="grid w-full grid-cols-3 justify-items-stretch gap-4 md:grid-cols-4 xl:grid-cols-6">
+            <div className="grid w-full grid-cols-2 justify-items-stretch gap-4 md:grid-cols-4 xl:grid-cols-6">
               {workouts.map((workout, i) => (
                 <Link key={i} id={i + ""} href={`/workoutInfo/${workout.id}`}>
                   <WorkoutCard workout={workout} />
@@ -47,7 +57,7 @@ export default async function Home() {
           {session?.user && (
             <Link
               href={"/workoutInfo"}
-              className="rounded-full bg-[#2290F7] px-10 py-3 font-semibold text-white no-underline transition hover:bg-white/20"
+              className="bg-primary text-text hover:bg-secondary/20 rounded-full px-10 py-3 font-semibold no-underline transition"
             >
               Create Workout
             </Link>

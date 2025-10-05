@@ -23,6 +23,8 @@ const RestTimer = (props: {
       }, 1000);
     } else if (!isRunning && seconds !== 0) {
       clearInterval(interval);
+    } else if (seconds === 0) {
+      props.notify();
     }
     return () => clearInterval(interval);
   }, [isRunning, seconds]);

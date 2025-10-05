@@ -391,29 +391,9 @@ export const workoutRouter = createTRPCRouter({
         },
       });
     }),
-
-  //!leave this in for now.
-  // onWorkoutAdd: protectedProcedure
-  //   .output(
-  //     zAsyncIterable({
-  //       yield: z.object({
-  //         title: z.string(),
-  //         description: z.string().nullable(),
-  //         id: z.number(),
-  //         authorId: z.string(),
-  //         ownerId: z.string(),
-  //       }),
-  //       tracked: true,
-  //     }),
-  //   )
-  //   .subscription(async function* (opts) {
-  //     for await (const [data] of on(ee, "add", {
-  //       signal: opts.signal,
-  //     })) {
-  //       const workout = data as Workout;
-  //       yield tracked(workout.id.toString(), workout);
-  //     }
-  //   }),
+  getAllTags: publicProcedure.query(async ({ ctx }) => {
+    return await ctx.db.tag.findMany({});
+  }),
 });
 
 function isAsyncIterable<TValue, TReturn = unknown>(

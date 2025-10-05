@@ -9,7 +9,7 @@ const WorkoutCard = ({
 }) => {
   return (
     <div className="mx-auto w-full max-w-md overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-lg transition-shadow duration-300 hover:shadow-xl md:max-w-sm">
-      <div className="flex h-40 items-center justify-center bg-gradient-to-tr from-yellow-300 to-yellow-400">
+      <div className="bg-primary from-primary to-secondary flex h-40 items-center justify-center bg-gradient-to-tr">
         <span className="text-5xl" role="img" aria-label="Workout">
           💪
         </span>
