@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { api } from "~/trpc/react";
 import { type api as apiServer } from "~/trpc/server";
-import NewExerciseModal from "./NewExerciseModal";
+import RoutineEditorModal from "./NewExerciseModal";
 import ExerciseCard from "./ExerciseCard";
 import { type RecursivePartial } from "~/constants/types";
 import RestTimer from "./RestTimer";
@@ -287,12 +287,17 @@ const WorkoutInfoId = (props: {
         </div>
       )}
       {stateMode != "read" && (
-        <NewExerciseModal
-          onAdd={({ muscles, title }) => {
-            setRoutine([
-              ...routine,
-              { exerciseName: title, musclesTargeted: muscles },
-            ]);
+        <RoutineEditorModal
+          onAddAll={(addedExercises) => {
+            let newRoutine = [...routine];
+            addedExercises.forEach((exercise) => {
+              newRoutine.push({
+                exerciseName: exercise.title,
+                musclesTargeted: exercise.muscles,
+              });
+            });
+
+            setRoutine(newRoutine);
           }}
         />
       )}
