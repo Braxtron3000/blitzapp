@@ -88,6 +88,8 @@ model Workout {
     owner       User              @relation(fields: [ownerId], references: [id], onDelete: Cascade, name: "owner")
     routine     WorkoutExercise[]
     WorkoutLog  WorkoutLog[]
+    Tag         Tag?              @relation(fields: [tagName], references: [name])
+    tagName     String?
 }
 
 // each exercise in the workout routine. each individual exercise has ONE workout, and one workoutlog
@@ -126,4 +128,9 @@ model WorkoutLog {
     workoutTemplate Workout           @relation(fields: [workoutId], references: [id], onDelete: Cascade, onUpdate: Cascade)
     workoutId       Int
     loggedRoutine   WorkoutExercise[]
+}
+
+model Tag {
+    name     String    @id
+    workouts Workout[]
 }
