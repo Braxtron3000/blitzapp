@@ -103,6 +103,8 @@ model WorkoutExercise {
     workoutId       Int
     workoutLog      WorkoutLog?    @relation(fields: [workoutLogId], references: [id])
     workoutLogId    Int?
+    supersetGroup   String?
+    orderInSuperset Int?
 
     @@map("Routine")
 }

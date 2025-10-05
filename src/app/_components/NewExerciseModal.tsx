@@ -20,6 +20,10 @@ import List from "@mui/material/List";
 import ListItem from "@mui/material/ListItem";
 import ListItemText from "@mui/material/ListItemText";
 import IconButton from "@mui/material/IconButton";
+import FormGroup from "@mui/material/FormGroup";
+import FormControlLabel from "@mui/material/FormControlLabel";
+import { randomUUID } from "crypto";
+import { v4 as uuid } from "uuid";
 
 //! todo these should come from the db.
 //! and the create modal should be using saved exercises with youtube videos/thumbnails.
@@ -43,6 +47,7 @@ type musclesString = { name: string }[];
 type newExercise = {
   muscles: musclesString;
   title: string;
+  supersetGroup?: string;
 };
 
 const RoutineEditorModal = ({
@@ -56,6 +61,7 @@ const RoutineEditorModal = ({
 }) => {
   const [selectedMuscles, setSelectedMuscles] = useState<string[]>([]);
   const [title, settitle] = useState("");
+  const [isSuperset, setIsSuperset] = useState(false);
   const [exercisesList, setExercisesList] = useState<newExercise[]>([]);
 
   //   const [url, setUrl] = useState(""); //! not gonna worry about the url rn.
@@ -64,6 +70,8 @@ const RoutineEditorModal = ({
   const clearFields = () => {
     settitle("");
     setSelectedMuscles([]);
+    setIsSuperset(false);
+    setExercisesList([]);
   };
 
   return (
@@ -90,9 +98,6 @@ const RoutineEditorModal = ({
       >
         <DialogTitle>Add Exercise</DialogTitle>
         <DialogContent>
-          <div className="flex flex-row items-center gap-2">
-            Superset <Switch aria-label="Switch make superset" />
-          </div>
           <TextField
             fullWidth
             label="Exercise Name"
@@ -125,21 +130,38 @@ const RoutineEditorModal = ({
           </div>
         </DialogContent>
         <DialogContent>
-          <Button
-            variant="contained"
-            disabled={!title}
-            onClick={() => {
-              setExercisesList(
-                exercisesList.concat({
-                  muscles: selectedMuscles.map((muscle) => ({ name: muscle })),
-                  title,
-                }),
-              );
-              clearFields();
-            }}
-          >
-            Add
-          </Button>
+          <FormGroup>
+            <Button
+              variant="contained"
+              disabled={!title}
+              onClick={() => {
+                setExercisesList(
+                  exercisesList.concat({
+                    muscles: selectedMuscles.map((muscle) => ({
+                      name: muscle,
+                    })),
+                    title,
+                  }),
+                );
+                settitle("");
+                setSelectedMuscles([]);
+              }}
+            >
+              Add
+            </Button>
+
+            <FormControlLabel
+              control={
+                <Switch
+                  aria-label="Switch make superset"
+                  onChange={(event: React.ChangeEvent<HTMLInputElement>) => {
+                    setIsSuperset(event.target.checked);
+                  }}
+                />
+              }
+              label={"Make Superset " + (isSuperset ? "(on)" : "(off")}
+            />
+          </FormGroup>
           <List>
             {exercisesList.map((exercise, index) => (
               <ListItem
@@ -179,7 +201,16 @@ const RoutineEditorModal = ({
             variant="contained"
             disabled={!exercisesList.length}
             onClick={() => {
-              onAddAll(exercisesList);
+              const supersetId = isSuperset
+                ? uuid().toLocaleLowerCase()
+                : undefined;
+
+              onAddAll(
+                exercisesList.map((exercise) => ({
+                  ...exercise,
+                  supersetGroup: supersetId,
+                })),
+              );
               clearFields();
               setShowNewExerciseModal(false);
             }}

@@ -8,6 +8,7 @@ import RoutineEditorModal from "./NewExerciseModal";
 import ExerciseCard from "./ExerciseCard";
 import { type RecursivePartial } from "~/constants/types";
 import RestTimer from "./RestTimer";
+import LinkIcon from "@mui/icons-material/Link";
 
 type workoutProp = NonNullable<
   Awaited<ReturnType<typeof apiServer.workout.findWorkoutById>>
@@ -119,6 +120,14 @@ const WorkoutInfoId = (props: {
     setRoutine(newRoutine);
   };
 
+  const showSuperSetPointers = (
+    exercise: (typeof routine)[number],
+    index: number,
+  ) =>
+    exercise.supersetGroup &&
+    index > 0 &&
+    routine.at(index - 1)?.supersetGroup === exercise.supersetGroup;
+
   return (
     <main className="flex min-h-screen flex-col items-center bg-gradient-to-b from-[#2290F7] to-[#0d3b66] text-white">
       <header
@@ -223,24 +232,33 @@ const WorkoutInfoId = (props: {
             />
 
             {routine.map((exercise, i) => (
-              <ExerciseCard
-                key={i.toString()}
-                exerciseName={exercise.exerciseName}
-                musclesTargeted={exercise.musclesTargeted}
-                workoutId={exercise.workoutId}
-                workoutLogId={exercise.workoutLogId}
-                sets={exercise.sets}
-                onUpdateSet={(exercise) => updateExercise(i, exercise)}
-                mode={stateMode}
-                onRemoveExercise={() => removeExercise(i)}
-                onCheckBox={({ minutes, index: setIndex }) =>
-                  setTimerSeconds({
-                    seconds: minutes * 60,
-                    exerciseIndex: i,
-                    setIndex,
-                  })
-                }
-              />
+              <>
+                <div
+                  className={`${showSuperSetPointers(exercise, i) ? "-mt-2" : ""} `}
+                >
+                  <ExerciseCard
+                    key={i.toString()}
+                    exerciseName={exercise.exerciseName}
+                    musclesTargeted={exercise.musclesTargeted}
+                    workoutId={exercise.workoutId}
+                    workoutLogId={exercise.workoutLogId}
+                    supersetGroup={exercise.supersetGroup ?? undefined}
+                    sets={exercise.sets}
+                    onUpdateSet={(exercise) => updateExercise(i, exercise)}
+                    mode={stateMode}
+                    onRemoveExercise={() => removeExercise(i)}
+                    onCheckBox={({ minutes, index: setIndex }) =>
+                      setTimerSeconds({
+                        seconds: minutes * 60,
+                        exerciseIndex: i,
+                        setIndex,
+                      })
+                    }
+                  />
+
+                  {/* <div className="absolute h-full w-16 border-t-2 border-white/20 bg-yellow-500"></div> */}
+                </div>
+              </>
             ))}
           </div>
           {stateMode !== "read" && (
@@ -294,6 +312,7 @@ const WorkoutInfoId = (props: {
               newRoutine.push({
                 exerciseName: exercise.title,
                 musclesTargeted: exercise.muscles,
+                supersetGroup: exercise.supersetGroup,
               });
             });
 
