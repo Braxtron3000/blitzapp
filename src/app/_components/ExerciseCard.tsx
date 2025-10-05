@@ -1,13 +1,23 @@
 "use client";
 
 import { useState } from "react";
-import type { RecursivePartial } from "~/constants/types";
+import Card from "@mui/material/Card";
+import CardHeader from "@mui/material/CardHeader";
+import CardContent from "@mui/material/CardContent";
+import CardActions from "@mui/material/CardActions";
+import IconButton from "@mui/material/IconButton";
+import Typography from "@mui/material/Typography";
+import TextField from "@mui/material/TextField";
+import Checkbox from "@mui/material/Checkbox";
+import Button from "@mui/material/Button";
+import DeleteIcon from "@mui/icons-material/Delete";
+import AddIcon from "@mui/icons-material/Add";
+import LinkIcon from "@mui/icons-material/Link";
+import { RecursivePartial } from "~/constants/types";
 
 type exerciseProps = RecursivePartial<
   {
-    musclesTargeted: {
-      name: string;
-    }[];
+    musclesTargeted: { name: string }[];
     sets: {
       id: number;
       weight: number | null;
@@ -20,6 +30,7 @@ type exerciseProps = RecursivePartial<
     exerciseName: string;
     workoutId: number;
     workoutLogId: number | null;
+    supersetGroup?: string;
   }
 >;
 
@@ -31,24 +42,14 @@ type exerciseCardProps = {
 };
 
 const ExerciseCard = (props: exerciseProps & exerciseCardProps) => {
-  const editable = props.mode != "read";
-
+  const editable = props.mode !== "read";
   const [checkedSetIndexes, setCheckedSetIndexes] = useState<number[]>([]);
-  const uncheckSet = (index: number) => {
-    setCheckedSetIndexes(
-      checkedSetIndexes.filter((setIndex) => setIndex != index),
-    );
-  };
-
-  const checkSet = (index: number) => {
-    setCheckedSetIndexes(checkedSetIndexes.concat(index));
-  };
 
   const toggleCheckbox = (index: number) => {
     if (checkedSetIndexes.includes(index)) {
-      uncheckSet(index);
+      setCheckedSetIndexes(checkedSetIndexes.filter((i) => i !== index));
     } else {
-      checkSet(index);
+      setCheckedSetIndexes([...checkedSetIndexes, index]);
       props.onCheckBox({
         minutes: props.sets?.at(index)?.restTime ?? 1,
         index,
@@ -57,122 +58,159 @@ const ExerciseCard = (props: exerciseProps & exerciseCardProps) => {
   };
 
   return (
-    <div className="flex w-full max-w-xs flex-col gap-4 rounded-xl bg-white/10 p-4">
-      {editable && props.mode != "start" && (
-        <button
-          type="button"
-          onClick={() => props.onRemoveExercise()}
-          className="h-7 w-7 rounded-full bg-red-500"
-        >
-          x
-        </button>
-      )}
-      <h1>{props.exerciseName}</h1>
-      <h2>{checkedSetIndexes.toString()}</h2>
+    <Card
+      sx={{
+        margin: "auto",
+        boxShadow: 3,
+      }}
+    >
+      <CardHeader
+        title={props.exerciseName}
+        action={
+          editable &&
+          props.mode !== "start" && (
+            <IconButton onClick={props.onRemoveExercise} color="error">
+              <DeleteIcon />
+            </IconButton>
+          )
+        }
+      />
+      <CardContent>
+        {props.musclesTargeted && (
+          <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
+            {props.musclesTargeted.map((m) => m.name).join(", ")}
+          </Typography>
+        )}
+
+        {props.sets?.map((set, i) => (
+          <div
+            key={i}
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: 8,
+              width: "100%",
+              marginBottom: 8,
+            }}
+          >
+            <TextField
+              label="Reps"
+              type="number"
+              size="small"
+              variant="outlined"
+              value={set.reps ?? ""}
+              disabled={props.mode === "read"}
+              onChange={({ target: { value } }) => {
+                props.onUpdateSet({
+                  ...props,
+                  sets: props.sets?.slice(0, i).concat(
+                    {
+                      ...props.sets.at(i),
+                      reps: value ? Number(value) : undefined,
+                    },
+                    props.sets.slice(i + 1),
+                  ),
+                });
+              }}
+              // sx={{ width: 80 }}
+            />
+            <TextField
+              label="Weight"
+              type="number"
+              size="small"
+              variant="outlined"
+              value={set.weight ?? ""}
+              disabled={props.mode === "read"}
+              onChange={({ target: { value } }) => {
+                props.onUpdateSet({
+                  ...props,
+                  sets: props.sets?.slice(0, i).concat(
+                    {
+                      ...props.sets.at(i),
+                      weight: value ? Number(value) : undefined,
+                    },
+                    props.sets.slice(i + 1),
+                  ),
+                });
+              }}
+              // sx={{ width: 80 }}
+            />
+            <TextField
+              label="Rest"
+              type="number"
+              size="small"
+              variant="outlined"
+              value={set.restTime ?? ""}
+              disabled={props.mode === "read"}
+              onChange={({ target: { value } }) => {
+                props.onUpdateSet({
+                  ...props,
+                  sets: props.sets?.slice(0, i).concat(
+                    {
+                      ...props.sets.at(i),
+                      restTime: value ? Number(value) : undefined,
+                    },
+                    props.sets.slice(i + 1),
+                  ),
+                });
+              }}
+              // sx={{ width: 80 }}
+            />
+            {props.mode === "start" && (
+              <Checkbox
+                checked={checkedSetIndexes.includes(i)}
+                onChange={() => toggleCheckbox(i)}
+                color="primary"
+              />
+            )}
+            {props.mode === "create" && (
+              <IconButton
+                onClick={() => {
+                  props.onUpdateSet({
+                    ...props,
+                    sets: props.sets
+                      ?.slice(0, i)
+                      .concat(props.sets.slice(i + 1)),
+                  });
+                }}
+                color="error"
+                size="small"
+              >
+                <DeleteIcon fontSize="small" />
+              </IconButton>
+            )}
+          </div>
+        ))}
+      </CardContent>
       {editable && (
-        <button
-          className="rounded-full bg-green-600 hover:bg-green-500"
-          type="button"
-          onClick={() => {
-            const lastSet = props.sets?.at(-1);
-            console.log("adding sets");
-            props.onUpdateSet({
-              ...props,
-              sets: props.sets?.concat({
-                reps: lastSet?.reps,
-                restTime: lastSet?.restTime,
-                weight: lastSet?.weight,
-              }) ?? [
-                {
+        <CardActions>
+          <Button
+            startIcon={<AddIcon />}
+            variant="contained"
+            color="primary"
+            onClick={() => {
+              const lastSet = props.sets?.at(-1);
+              props.onUpdateSet({
+                ...props,
+                sets: props.sets?.concat({
                   reps: lastSet?.reps,
                   restTime: lastSet?.restTime,
                   weight: lastSet?.weight,
-                },
-              ],
-            });
-          }}
-        >
-          Add
-        </button>
+                }) ?? [
+                  {
+                    reps: lastSet?.reps,
+                    restTime: lastSet?.restTime,
+                    weight: lastSet?.weight,
+                  },
+                ],
+              });
+            }}
+          >
+            Add Set
+          </Button>
+        </CardActions>
       )}
-      {props.sets?.map((set, i) => (
-        <div key={i.toString()} className="flex flex-row justify-evenly gap-1">
-          <input
-            placeholder="reps"
-            type="number"
-            className="w-1 flex-1 text-black"
-            disabled={props.mode === "read"}
-            onChange={({ target: { value } }) => {
-              props.onUpdateSet({
-                ...props,
-                sets: props.sets?.slice(0, i).concat(
-                  {
-                    ...props.sets.at(i),
-                    reps: value ? Number(value) : undefined,
-                  },
-                  props.sets.slice(i + 1),
-                ),
-              });
-            }}
-            value={set.reps ?? ""}
-          />
-          <input
-            placeholder="weight"
-            type="number"
-            className="w-1 flex-1 text-black"
-            value={set.weight ?? ""}
-            disabled={props.mode === "read"}
-            onChange={({ target: { value } }) => {
-              props.onUpdateSet({
-                ...props,
-                sets: props.sets?.slice(0, i).concat(
-                  {
-                    ...props.sets.at(i),
-                    weight: value ? Number(value) : undefined,
-                  },
-                  props.sets.slice(i + 1),
-                ),
-              });
-            }}
-          />
-          <input
-            placeholder="restTime"
-            type="number"
-            className="w-1 flex-1 text-black"
-            value={set.restTime ?? ""}
-            disabled={props.mode === "read"}
-            onChange={({ target: { value } }) => {
-              props.onUpdateSet({
-                ...props,
-                sets: props.sets?.slice(0, i).concat(
-                  {
-                    ...props.sets.at(i),
-                    restTime: value ? Number(value) : undefined,
-                  },
-                  props.sets.slice(i + 1),
-                ),
-              });
-            }}
-          />
-          {props.mode === "start" && (
-            <input type="checkbox" onClick={() => toggleCheckbox(i)} />
-          )}
-          {props.mode == "create" && (
-            <button
-              type="button"
-              onClick={() => {
-                props.onUpdateSet({
-                  ...props,
-                  sets: props.sets?.slice(0, i).concat(props.sets.slice(i + 1)),
-                });
-              }}
-            >
-              X
-            </button>
-          )}
-        </div>
-      ))}
-    </div>
+    </Card>
   );
 };
 
