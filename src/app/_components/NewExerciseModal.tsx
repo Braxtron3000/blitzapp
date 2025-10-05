@@ -1,4 +1,15 @@
+"use client";
 import { useRef, useState } from "react";
+import Fab from "@mui/material/Fab";
+import Dialog from "@mui/material/Dialog";
+import DialogTitle from "@mui/material/DialogTitle";
+import AddIcon from "@mui/icons-material/Add";
+import DialogContent from "@mui/material/DialogContent";
+import DialogContentText from "@mui/material/DialogContentText";
+import TextField from "@mui/material/TextField";
+import DialogActions from "@mui/material/DialogActions";
+import Button from "@mui/material/Button";
+import Chip from "@mui/material/Chip";
 
 //! todo these should come from the db.
 //! and the create modal should be using saved exercises with youtube videos/thumbnails.
@@ -28,57 +39,81 @@ const NewExerciseModal = ({
   const [selectedMuscles, setSelectedMuscles] = useState<string[]>([]);
   const [title, settitle] = useState("");
   //   const [url, setUrl] = useState(""); //! not gonna worry about the url rn.
+  const [showNewExerciseModal, setShowNewExerciseModal] = useState(false);
+
+  const clearFieldsAndClose = () => {
+    settitle("");
+    setSelectedMuscles([]);
+    setShowNewExerciseModal(false);
+  };
 
   return (
-    <div className="fixed bottom-0 z-10 flex w-full flex-col items-center gap-2 rounded-t-3xl bg-stone-700 py-4">
-      <input
-        type="text"
-        placeholder="exercise name"
-        value={title}
-        onChange={(e) => settitle(e.target.value)}
-        className="block w-11/12 rounded-full px-4 py-2 text-black"
-      />
-
-      {/* <input
-        type="url"
-        placeholder="video link"
-        value={url}
-        onChange={(e) => setUrl(e.target.value)}
-        className="block w-11/12 rounded-full px-4 py-2 text-black"
-      /> */}
-      <div className="flex w-11/12 flex-wrap justify-evenly gap-1">
-        {muscleGroups.map((muscle, i) => (
-          <button
-            key={i.toString()}
-            onClick={() => {
-              if (selectedMuscles.includes(muscle)) {
-                setSelectedMuscles(
-                  selectedMuscles.filter((item) => item != muscle),
-                );
-              } else {
-                setSelectedMuscles([...selectedMuscles, muscle]);
-              }
-            }}
-            className={`rounded-3xl ${selectedMuscles.includes(muscle) ? "bg-yellow-300" : "bg-yellow-100"} px-4 py-1 text-black`}
-          >
-            {muscle}
-          </button>
-        ))}
+    <>
+      <div className="fixed bottom-8 right-4" color="bg-primary">
+        <Fab
+          aria-label="add"
+          color="primary"
+          onClick={() => {
+            setShowNewExerciseModal(true);
+          }}
+        >
+          <AddIcon />
+        </Fab>
       </div>
-      <button
-        className="block rounded-full bg-white/10 px-10 py-3 font-semibold transition hover:bg-white/20 disabled:text-gray-500"
-        onClick={() => {
-          onAdd({
-            muscles: selectedMuscles.map((muscle) => ({ name: muscle })),
-            title,
-          });
-          settitle("");
-        }}
-        disabled={!title}
+      <Dialog
+        open={showNewExerciseModal}
+        onClose={() => setShowNewExerciseModal(false)}
       >
-        Add Exercise
-      </button>
-    </div>
+        <DialogTitle>Add Exercise</DialogTitle>
+        <DialogContent>
+          <TextField
+            fullWidth
+            label="Exercise Name"
+            variant="standard"
+            value={title}
+            onChange={(event: React.ChangeEvent<HTMLInputElement>) => {
+              settitle(event.target.value);
+            }}
+          />
+        </DialogContent>
+        <DialogContent>
+          <DialogContentText>Muscle Groups</DialogContentText>
+          <div className="flex flex-wrap justify-evenly gap-1">
+            {muscleGroups.map((muscle, i) => (
+              <Chip
+                key={i.toString()}
+                onClick={() => {
+                  if (selectedMuscles.includes(muscle)) {
+                    setSelectedMuscles(
+                      selectedMuscles.filter((item) => item != muscle),
+                    );
+                  } else {
+                    setSelectedMuscles([...selectedMuscles, muscle]);
+                  }
+                }}
+                label={muscle}
+                color={selectedMuscles.includes(muscle) ? "primary" : undefined}
+              />
+            ))}
+          </div>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={clearFieldsAndClose}>Cancel</Button>
+          <Button
+            disabled={!title}
+            onClick={() => {
+              onAdd({
+                muscles: selectedMuscles.map((muscle) => ({ name: muscle })),
+                title,
+              });
+              clearFieldsAndClose();
+            }}
+          >
+            Add
+          </Button>
+        </DialogActions>
+      </Dialog>
+    </>
   );
 };
 
