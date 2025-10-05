@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { api } from "~/trpc/react";
 import { type api as apiServer } from "~/trpc/server";
@@ -24,6 +24,25 @@ const WorkoutInfoId = (props: {
   const [description, setDescription] = useState(
     props.workout ? props.workout.description : "",
   );
+
+  useEffect(() => {
+    if (props.mode === "start") {
+      if (!("Notification" in window)) {
+        console.log("This browser does not support notifications.");
+        return;
+      }
+
+      Notification.requestPermission()
+        .then((permission) => {
+          if (permission === "granted") {
+            new Notification("Hello! This is a test notification.");
+          }
+        })
+        .catch((error) => {
+          console.error("Error requesting notification permission:", error);
+        });
+    }
+  }, []);
 
   const [showConfirmEditModal, setShowConfirmEditModal] = useState(false);
   const [timerSeconds, setTimerSeconds] = useState<{
@@ -157,7 +176,7 @@ const WorkoutInfoId = (props: {
         {stateMode == "start" && (
           <RestTimer
             seconds={timerSeconds}
-            notify={() => alert("get back to your workout")}
+            notify={() => new Notification("get back to your workout")}
           />
         )}
       </header>

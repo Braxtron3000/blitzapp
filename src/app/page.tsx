@@ -3,6 +3,7 @@ import { auth } from "~/server/auth";
 import { api, HydrateClient } from "~/trpc/server";
 import WorkoutCard from "./_components/WorkoutCard";
 import Image from "next/image";
+import Button from "@mui/material/Button";
 
 export default async function Home() {
   const session = await auth();
