@@ -80,6 +80,7 @@ const WorkoutInfoId = (props: {
         exerciseName: exercise.exerciseName ?? "",
         musclesTargeted:
           exercise.musclesTargeted?.map(({ name }) => name ?? "") ?? [],
+        superSetGroup: exercise?.supersetGroup ?? null,
         sets:
           exercise.sets?.map((set) => ({
             weight: set.weight ?? 0,
@@ -234,6 +235,7 @@ const WorkoutInfoId = (props: {
             {routine.map((exercise, i) => (
               <>
                 <div
+                  key={i.toString()}
                   className={`${showSuperSetPointers(exercise, i) ? "-mt-2" : ""} `}
                 >
                   <ExerciseCard
@@ -307,7 +309,7 @@ const WorkoutInfoId = (props: {
       {stateMode != "read" && (
         <RoutineEditorModal
           onAddAll={(addedExercises) => {
-            let newRoutine = [...routine];
+            const newRoutine = [...routine];
             addedExercises.forEach((exercise) => {
               newRoutine.push({
                 exerciseName: exercise.title,

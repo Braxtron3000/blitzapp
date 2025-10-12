@@ -159,13 +159,13 @@ const RoutineEditorModal = ({
                   }}
                 />
               }
-              label={"Make Superset " + (isSuperset ? "(on)" : "(off")}
+              label={"Make Superset"}
             />
           </FormGroup>
           <List>
             {exercisesList.map((exercise, index) => (
               <ListItem
-                key={exercise.title}
+                key={exercise.title + index}
                 secondaryAction={
                   <IconButton
                     edge="end"

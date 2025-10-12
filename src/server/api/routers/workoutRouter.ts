@@ -10,80 +10,6 @@ import type { TrackedEnvelope } from "@trpc/server";
 import { isTrackedEnvelope, tracked } from "@trpc/server";
 
 export const workoutRouter = createTRPCRouter({
-  seed: protectedProcedure.mutation(async ({ ctx, input }) => {
-    const workouts = await ctx.db.workout.createManyAndReturn({
-      data: [
-        {
-          authorId: ctx.session.user.id,
-          ownerId: ctx.session.user.id,
-          title: "supercool workout",
-          description:
-            "some workout info here. blah. blah. blah. blah blah blah bleebloo blah.",
-        },
-      ],
-      select: {
-        id: true,
-      },
-    });
-
-    let firstindex = workouts.at(0);
-
-    if (!firstindex?.id) {
-      console.error("no workout returned");
-
-      return;
-    }
-
-    const workoutLogs = await ctx.db.workoutLog.createManyAndReturn({
-      data: [{ workoutId: firstindex.id }],
-    });
-
-    const workoutLogfirstIndex = workoutLogs.at(0);
-    if (!workoutLogfirstIndex?.id) {
-      console.error("no workoutlog returned");
-      return;
-    }
-
-    const workoutExercises = await ctx.db.workoutExercise.createManyAndReturn({
-      data: [
-        {
-          workoutId: firstindex.id,
-          exerciseName: "bench",
-          workoutLogId: workoutLogfirstIndex.id,
-        },
-        {
-          workoutId: firstindex.id,
-          exerciseName: "squat",
-          workoutLogId: workoutLogfirstIndex.id,
-        },
-      ],
-      select: { id: true },
-    });
-
-    firstindex = workoutExercises.at(0);
-    if (!firstindex?.id) {
-      console.error("no workout exercises returned");
-      return;
-    }
-
-    const exerciseSets = await ctx.db.singleSet.createMany({
-      data: [
-        {
-          reps: 15,
-          restTime: 1,
-          weight: 15,
-          workoutExerciseId: firstindex.id,
-        },
-        {
-          reps: 17,
-          restTime: 1,
-          weight: 15,
-          workoutExerciseId: firstindex.id,
-        },
-      ],
-    });
-    return exerciseSets;
-  }),
   createWorkout: protectedProcedure
     .input(
       z.object({
@@ -93,6 +19,7 @@ export const workoutRouter = createTRPCRouter({
           .object({
             exerciseName: z.string(),
             musclesTargeted: z.string().array(),
+            superSetGroup: z.string().nullable(),
             sets: z
               .object({
                 weight: z.number().nullable(),
@@ -105,6 +32,8 @@ export const workoutRouter = createTRPCRouter({
       }),
     )
     .mutation(async ({ ctx, input }) => {
+      console.log("ayy creating workout ", input.routine, 3);
+
       const workouts = await ctx.db.workout.createManyAndReturn({
         data: [
           {
@@ -144,6 +73,7 @@ export const workoutRouter = createTRPCRouter({
               workoutId: firstindex!.id, //returns above if its undefined.
               workoutLogId: workoutLogfirstIndex.id,
               exerciseName: workoutExercise.exerciseName,
+              supersetGroup: workoutExercise.superSetGroup,
               // musclesTargeted: workoutExercise.musclesTargeted,
             };
           }),
