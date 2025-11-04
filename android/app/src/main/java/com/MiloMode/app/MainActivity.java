@@ -1,4 +1,4 @@
-package com.MiloMode.app;
+package com.milomode.app;
 
 import android.content.pm.ApplicationInfo;
 import android.net.http.SslError;

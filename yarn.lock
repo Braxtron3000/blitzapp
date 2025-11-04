@@ -128,6 +128,11 @@
   resolved "https://registry.npmjs.org/@capacitor/android/-/android-7.3.0.tgz"
   integrity sha512-TqUm+Z3Uk7/rET+adNDKD63JtA0AN+pMQlFRcLPmZJHFmJl6bUOWWELVL0Ixl5XaweTxofNKeDAjjLRIs+wd3g==
 
+"@capacitor/browser@^7.0.2":
+  version "7.0.2"
+  resolved "https://registry.yarnpkg.com/@capacitor/browser/-/browser-7.0.2.tgz#889fa6ab16eeec86f7097b87c92babe15744fcc8"
+  integrity sha512-5kySTunCtH+2sezmTjgDfwvspW7GW/hslQECZeLIRM2qefnxjGTc3fmCTeILYK5EuvcxMs+8sF5BhmzzKqOzuQ==
+
 "@capacitor/cli@^7.3.0":
   version "7.3.0"
   resolved "https://registry.npmjs.org/@capacitor/cli/-/cli-7.3.0.tgz"
@@ -162,6 +167,11 @@
   version "7.3.0"
   resolved "https://registry.npmjs.org/@capacitor/ios/-/ios-7.3.0.tgz"
   integrity sha512-gHEERjA8wG/GBBZJD8i7eiX0QwGY2HMh3H3KPw5a1CGhmNhtr/1bsrgwF7s6LP+KC4kKWseYo+ZrHjw1JC3JGA==
+
+"@capacitor/local-notifications@^7.0.3":
+  version "7.0.3"
+  resolved "https://registry.yarnpkg.com/@capacitor/local-notifications/-/local-notifications-7.0.3.tgz#27207215b39af342204b19c13efb6c55a89880aa"
+  integrity sha512-zVHZk5AYRiBwBDynaD7caPUROozgvwOG0L2SPFw1HBTWCscJvo0fsaE67NWW252jzel3PH0XogglJUYFx/jtHA==
 
 "@electron/get@^2.0.0":
   version "2.0.3"
