@@ -8,12 +8,18 @@ import SigninButtons from "./_components/SinginButtons";
 import { Capacitor } from "@capacitor/core";
 
 export default async function Home() {
-  const session = await auth();
+  const platform = Capacitor.getPlatform();
+
+  const latestSession = await api.auth.getSession({
+    email: "braxdhancock@gmail.com",
+    name: "braxton hancock",
+  });
+
+  const session = true ? latestSession : await auth();
 
   const workouts = await api.workout.getWorkouts();
   const tags = await api.workout.getAllTags();
-  const platform = Capacitor.getPlatform();
-
+  console.log("latestsession:", latestSession);
   return (
     <HydrateClient>
       <div className="min-h-screen w-full items-center justify-center bg-background py-4">
@@ -39,7 +45,7 @@ export default async function Home() {
               </Link>
             )}
             {!session &&
-              (true ? (
+              (false ? (
                 <SigninButtons />
               ) : (
                 <Link className="text-white" href={"/api/auth/signin"}>
@@ -51,6 +57,7 @@ export default async function Home() {
         <main className="flex min-h-screen w-full flex-col items-center px-4 text-white">
           <div className="container flex w-full flex-col items-center justify-center py-16">
             <div className="grid w-full grid-cols-2 justify-items-stretch gap-4 md:grid-cols-4 xl:grid-cols-6">
+              <SigninButtons />
               {workouts.map((workout, i) => (
                 <Link key={i} id={i + ""} href={`/workoutInfo/${workout.id}`}>
                   <WorkoutCard workout={workout} />

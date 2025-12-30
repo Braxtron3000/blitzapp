@@ -2,9 +2,13 @@
   "name": "blitzapp",
   "version": "0.1.0",
   "private": true,
+  "workspaces": [
+    "authjs-capacitor-oauth-plugin"
+  ],
   "type": "module",
   "main": "main.js",
   "scripts": {
+    "updateauthplugin": "cd authjs-capacitor-oauth-plugin && yarn run build && cd .. && yarn remove authjs-capacitor-oauth-plugin && yarn add file:./authjs-capacitor-oauth-plugin && yarn android && adb -s ZY22BNTBL6 reverse tcp:3000 tcp:3000 && yarn dev --experimental-https && adb shell am force-stop com.milomode.app && adb shell monkey -p com.milomode.app -c android.intent.category.LAUNCHER 1",
     "build": "next build",
     "check": "next lint && tsc --noEmit",
     "db:generate": "prisma migrate dev",
@@ -43,8 +47,9 @@
     "@trpc/client": "^11.0.0-rc.446",
     "@trpc/react-query": "^11.0.0-rc.446",
     "@trpc/server": "^11.0.0-rc.446",
-    "authjs-capacitor-oauth-plugin": "./authjs-capacitor-oauth-plugin",
+    "authjs-capacitor-oauth-plugin": "file:./authjs-capacitor-oauth-plugin",
     "geist": "^1.3.0",
+    "google-auth-library": "^10.5.0",
     "next": "^15.0.1",
     "next-auth": "5.0.0-beta.25",
     "react": "^19.0.0",
@@ -63,6 +68,8 @@
     "@types/react-dom": "^18.3.0",
     "@typescript-eslint/eslint-plugin": "^8.1.0",
     "@typescript-eslint/parser": "^8.1.0",
+    "@capacitor/docgen": "^0.3.0",
+    "rollup": "^4.30.1",
     "electron": "^36.4.0",
     "eslint": "^8.57.0",
     "eslint-config-next": "^15.0.1",
@@ -77,7 +84,10 @@
     "initVersion": "7.38.1"
   },
   "resolutions": {
-    "react-is": "^18.3.1"
+    "react-is": "^18.3.1",
+    "string-width": "4.2.3",
+    "wrap-ansi": "6.2.0",
+    "strip-ansi": "6.0.1"
   },
   "packageManager": "yarn@1.22.17"
 }
