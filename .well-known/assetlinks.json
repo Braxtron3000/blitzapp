@@ -1,0 +1,12 @@
+[
+  {
+    "relation": ["delegate_permission/common.handle_all_urls"],
+    "target": {
+      "namespace": "android_app",
+      "package_name": "com.milomode.app",
+      "sha256_cert_fingerprints": [
+        "29:8B:FF:44:10:66:21:F0:17:5D:33:04:EF:F6:E3:4F:83:9F:EA:31:25:80:E4:5E:55:19:CA:76:27:9E:75:BB"
+      ]
+    }
+  }
+]
