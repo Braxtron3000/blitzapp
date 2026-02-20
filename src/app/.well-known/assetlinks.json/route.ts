@@ -9,6 +9,7 @@ export async function GET() {
     "app",
     ".well-known",
     "assetlinks.json",
+    "assetlinks.json",
   );
 
   try {
