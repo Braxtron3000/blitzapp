@@ -4,6 +4,9 @@ import { api, HydrateClient } from "~/trpc/server";
 import WorkoutCard from "./_components/WorkoutCard";
 import Image from "next/image";
 import Button from "@mui/material/Button";
+import { Capacitor } from "@capacitor/core";
+import { env } from "~/env";
+import { SigninButtons } from "./_components/SigninButtons";
 
 export default async function Home() {
   const session = await auth();
@@ -13,19 +16,32 @@ export default async function Home() {
 
   return (
     <HydrateClient>
-      <div className="bg-background min-h-screen w-full items-center justify-center py-4">
+      <div className="min-h-screen w-full items-center justify-center bg-background py-4">
         <header className="flex w-full justify-center px-4">
           <div className="container flex h-16 w-full flex-row items-center justify-center gap-4">
-            <div className="bg-surface text-text flex w-1/2 flex-grow items-center rounded-full px-4 py-2">
+            <div className="flex w-1/2 flex-grow items-center rounded-full bg-surface px-4 py-2 text-text">
               <input
                 type="text"
-                placeholder="Search..."
+                placeholder={
+                  "Search..." +
+                  Capacitor.isPluginAvailable("Authenticator") +
+                  Capacitor.getPlatform() +
+                  Capacitor.isNativePlatform() +
+                  env.NEXT_PUBLIC_PLATFORM
+                }
                 className="flex-1 bg-transparent outline-none placeholder:text-white"
               />
             </div>
 
             {session?.user.image && (
-              <Link className="block shrink" href={"/api/auth/signout"}>
+              <Link
+                className="block shrink"
+                href={
+                  Capacitor.isNativePlatform()
+                    ? "/api/auth/deviceLogin"
+                    : "/api/auth/signout"
+                }
+              >
                 <Image
                   className="h-10 w-10 rounded-full"
                   src={session.user.image}
@@ -35,11 +51,13 @@ export default async function Home() {
                 />
               </Link>
             )}
-            {!session && (
+            {/* {!session && (
               <Link className="text-white" href={"/api/auth/signin"}>
                 Sign in
               </Link>
-            )}
+            )} */}
+
+            <SigninButtons />
           </div>
         </header>
         <main className="flex min-h-screen w-full flex-col items-center px-4 text-white">
@@ -57,7 +75,7 @@ export default async function Home() {
           {session?.user && (
             <Link
               href={"/workoutInfo"}
-              className="bg-primary text-text hover:bg-secondary/20 rounded-full px-10 py-3 font-semibold no-underline transition"
+              className="rounded-full bg-primary px-10 py-3 font-semibold text-text no-underline transition hover:bg-secondary/20"
             >
               Create Workout
             </Link>

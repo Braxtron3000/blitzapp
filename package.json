@@ -5,6 +5,7 @@
   "type": "module",
   "main": "main.js",
   "scripts": {
+    "updateauthplugin": "cd authjs-capacitor-oauth-plugin && yarn run build && cd .. && yarn remove authjs-capacitor-oauth-plugin && yarn add file:./authjs-capacitor-oauth-plugin && yarn android && adb -s ZY22BNTBL6 reverse tcp:3000 tcp:3000 && yarn dev --experimental-https && adb shell am force-stop com.milomode.app && adb shell monkey -p com.milomode.app -c android.intent.category.LAUNCHER 1",
     "build": "next build",
     "check": "next lint && tsc --noEmit",
     "db:generate": "prisma migrate dev",

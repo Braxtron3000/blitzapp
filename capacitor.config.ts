@@ -7,6 +7,7 @@ const config: CapacitorConfig = {
   webDir: ".next",
   server: {
     url: "https://localhost:3000", //env.NEXTAUTH_URL, //build wont change unless the actual ass    igned var changes not just the assigned var's value.
+    // url: "https://blitzapp-zeta.vercel.app/",
   },
   plugins: {
     LocalNotifications: {
