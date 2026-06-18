@@ -16,7 +16,8 @@ export const SigninButtons = () => {
         // console.log("Authenticator response:", something);
         // setHello(something.value);
 
-        await GoogleAuth.echo({ value: "Hello, Google Auth!" });
+        const ba = await GoogleAuth.hello();
+        console.log("GoogleAuth response:", ba);
       }}
     >
       Sign In {hello}
