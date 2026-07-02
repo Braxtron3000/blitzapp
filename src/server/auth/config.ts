@@ -4,6 +4,7 @@ import { type DefaultSession, type NextAuthConfig } from "next-auth";
 import GoogleProvider from "next-auth/providers/google";
 import { env } from "~/env";
 import { db } from "~/server/db";
+import Credentials from "next-auth/providers/credentials";
 
 /**
  * Module augmentation for `next-auth` types. Allows us to add custom properties to the `session`
@@ -33,11 +34,26 @@ declare module "next-auth" {
  */
 export const authConfig = {
   providers: [
-    // DiscordProvider,
-    GoogleProvider({
-      clientId: env.GOOGLE_CLIENT_ID,
-      clientSecret: env.GOOGLE_CLIENT_SECRET,
+    Credentials({
+      credentials: {
+        password: { label: "Password", type: "password" },
+      },
+      authorize(c) {
+        if (c.password !== "password") return null;
+
+        console.log("Credentials:", c);
+        return {
+          id: "test",
+          name: "Test User",
+          email: "test@example.com",
+        };
+      },
     }),
+    // DiscordProvider,
+    // GoogleProvider({
+    //   clientId: env.GOOGLE_CLIENT_ID,
+    //   clientSecret: env.GOOGLE_CLIENT_SECRET,
+    // }),
     /**
      * ...add more providers here.
      *
@@ -50,14 +66,25 @@ export const authConfig = {
   ],
 
   adapter: PrismaAdapter(db),
-  callbacks: {
-    session: ({ session, user }) => ({
-      ...session,
-      user: {
-        ...session.user,
-        image: user.image,
-        id: user.id,
-      },
-    }),
-  },
+  pages: { signIn: "/signin" },
+  // callbacks: {
+  //   session: ({ session, user }) => ({
+  //     ...session,
+  //     user: {
+  //       ...session.user,
+  //       image: user.image,
+  //       id: user.id,
+  //     },
+  //   }),
+  // },
 } satisfies NextAuthConfig;
+
+export const providerMap = authConfig.providers.map((provider) => {
+  // if (typeof provider === "function") {
+  //   const providerData = provider();
+  //   return { id: providerData.id, name: providerData.name };
+  // } else {
+  return { id: provider.id, name: provider.name };
+  // }
+});
+// .filter((provider) => provider.id !== "credentials");

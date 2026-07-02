@@ -13,10 +13,10 @@ export default async function Home() {
 
   return (
     <HydrateClient>
-      <div className="bg-background min-h-screen w-full items-center justify-center py-4">
+      <div className="min-h-screen w-full items-center justify-center bg-background py-4">
         <header className="flex w-full justify-center px-4">
           <div className="container flex h-16 w-full flex-row items-center justify-center gap-4">
-            <div className="bg-surface text-text flex w-1/2 flex-grow items-center rounded-full px-4 py-2">
+            <div className="flex w-1/2 flex-grow items-center rounded-full bg-surface px-4 py-2 text-text">
               <input
                 type="text"
                 placeholder="Search..."
@@ -36,7 +36,8 @@ export default async function Home() {
               </Link>
             )}
             {!session && (
-              <Link className="text-white" href={"/api/auth/signin"}>
+              /*               <Link className="text-white" href={"/api/auth/signin"}>*/
+              <Link className="text-white" href={"/signin"}>
                 Sign in
               </Link>
             )}
@@ -57,7 +58,7 @@ export default async function Home() {
           {session?.user && (
             <Link
               href={"/workoutInfo"}
-              className="bg-primary text-text hover:bg-secondary/20 rounded-full px-10 py-3 font-semibold no-underline transition"
+              className="rounded-full bg-primary px-10 py-3 font-semibold text-text no-underline transition hover:bg-secondary/20"
             >
               Create Workout
             </Link>
