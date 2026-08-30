@@ -26,6 +26,12 @@ export const env = createEnv({
     // DISCORD_CLIENT_SECRET: z.string(),
     GOOGLE_CLIENT_ID: z.string(),
     GOOGLE_CLIENT_SECRET: z.string(),
+    ANDROID_JWT_SECRET: z
+      .string()
+      .min(32)
+      .describe(
+        "Shared secret for signing/verifying Android JWT tokens. Must be at least 32 characters.",
+      ),
   },
   /**
    * Specify your client-side environment variables schema here. This way you can ensure the app
@@ -50,6 +56,7 @@ export const env = createEnv({
     // DISCORD_CLIENT_SECRET: process.env.DISCORD_CLIENT_SECRET,
     GOOGLE_CLIENT_ID: process.env.GOOGLE_CLIENT_ID,
     GOOGLE_CLIENT_SECRET: process.env.GOOGLE_CLIENT_SECRET,
+    ANDROID_JWT_SECRET: process.env.ANDROID_JWT_SECRET,
     NEXT_PUBLIC_PLATFORM: process.env.NEXT_PUBLIC_PLATFORM,
   },
   /**

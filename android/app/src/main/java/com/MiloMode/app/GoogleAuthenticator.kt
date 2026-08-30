@@ -1,7 +1,9 @@
 package com.milomode.app
 
 import android.content.Context
+import android.os.Build
 import android.util.Log
+import androidx.annotation.RequiresApi
 import androidx.credentials.CustomCredential
 import androidx.credentials.GetCredentialRequest
 import androidx.credentials.GetCredentialResponse
@@ -31,6 +33,8 @@ import kotlinx.serialization.SerializationException
 import kotlinx.serialization.json.Json
 import java.io.InputStream
 import java.io.OutputStream
+import java.security.SecureRandom
+import java.util.Base64
 
 @Serializable
 data class Settings(
@@ -69,11 +73,18 @@ object SettingsSerializer : Serializer<Settings> {
     }
 }
 
+
 val Context.datastore: DataStore<Settings> by dataStore(
     fileName = "settings.json",
     serializer = SettingsSerializer,
 )
 
+@RequiresApi(Build.VERSION_CODES.O)
+fun generateSecureRandomNonce(byteLength: Int = 32): String {
+    val randomBytes = ByteArray(byteLength)
+    SecureRandom.getInstanceStrong().nextBytes(randomBytes)
+    return Base64.getUrlEncoder().withoutPadding().encodeToString(randomBytes)
+}
 
 @CapacitorPlugin(name = "Authenticator")
 class AuthenticatorPlugin : Plugin() {
@@ -99,18 +110,20 @@ class AuthenticatorPlugin : Plugin() {
 
 
 
+    @RequiresApi(Build.VERSION_CODES.O)
     private fun instantiateSignin(serverClientId: String): GetGoogleIdOption? {
         var googleIdOption: GetGoogleIdOption? = null;
         try {
             Log.v(TAG, "AAAYYY HERE I AM");
-            googleIdOption = GetGoogleIdOption.Builder().setFilterByAuthorizedAccounts(false)
+            googleIdOption = GetGoogleIdOption.Builder()
+                .setFilterByAuthorizedAccounts(true)
                 .setServerClientId(serverClientId)
                 .setAutoSelectEnabled(true)
                 // nonce string to use when generating a Google ID token
-                .setNonce("YOURMOM")//FIXME: ALSO DONT COMMIT ME
+                .setNonce(generateSecureRandomNonce())
                 .build()
 
-            Log.v(TAG, "AAAYYY HERE I GO " + googleIdOption.toString());
+            Log.v(TAG, "AAAYYY weeeee " + googleIdOption.toString());
 
         } catch (e: Exception) {
             Log.e(TAG, "AAAYYY BINGBONG SOMETHING STUPID HAPPENED ");
@@ -150,11 +163,11 @@ class AuthenticatorPlugin : Plugin() {
                         val googleIdTokenCredential =
                             GoogleIdTokenCredential.createFrom(credential.data)
 
+
                         Log.v(
                             TAG,
                             googleIdTokenCredential.displayName + " | " + googleIdTokenCredential.id + " | " + googleIdTokenCredential.profilePictureUri
                         );
-
 
                         val jsObject = JSObject();
                         //extra idk where
@@ -220,6 +233,7 @@ class AuthenticatorPlugin : Plugin() {
     }
 
 
+    @RequiresApi(Build.VERSION_CODES.O)
     private suspend fun createSignInGoogleFlow(serverClientId: String): JSObject? {
         val credentialManager = CredentialManager.create(context)
         Log.v(TAG, "calling create Sign in google flow")
@@ -283,22 +297,16 @@ class AuthenticatorPlugin : Plugin() {
         }
     }
 
+    fun saveSecret(call: PluginCall) {}
+
+    @RequiresApi(Build.VERSION_CODES.O)
     @PluginMethod
     fun hello(call: PluginCall) {
-        Log.v("joe mama", "AAAYYY calling hello");
-        var returncredentials: JSObject? = null
         val pluginScope = CoroutineScope(Dispatchers.Main)
-//        val serverClientId = call.getString("value");
-//        if(serverClientId==null){
-//            call.reject("serverClientId is null")
-//            return;
-//        }
-
-
         pluginScope.launch {
             try {
                 // Wait for the sign-in flow to finish and return the JSObject
-                val data = createSignInGoogleFlow("uh oh retard alert");
+                val data = createSignInGoogleFlow("933011159753-7d7cgdml7f06qmghv1v0upmsprvt4jup.apps.googleusercontent.com"); //Todo: env this.
 
                 // Send the data back to JavaScript
                 call.resolve(data)

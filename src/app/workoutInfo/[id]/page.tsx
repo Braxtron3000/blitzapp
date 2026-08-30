@@ -1,6 +1,7 @@
 import WorkoutInfoId from "~/app/_components/WorkoutInfo";
 import { auth } from "~/server/auth";
 import { api } from "~/trpc/server";
+// import { getTrpcServerClient } from "~/utils/trpcServerClient";
 
 const WorkoutInfoIdPage = async ({
   params,
@@ -15,6 +16,8 @@ const WorkoutInfoIdPage = async ({
     return <h1>we couldnt find this workout</h1>;
   }
 
+  //   const trpc = getTrpcServerClient();
+  // const workout = await trpc.workout.findWorkoutById.query({ id: numberedId });
   const workout = await api.workout.findWorkoutById({ id: numberedId });
 
   if (!workout) {

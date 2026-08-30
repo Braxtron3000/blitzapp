@@ -13,6 +13,10 @@ import { ZodError } from "zod";
 
 import { auth } from "~/server/auth";
 import { db } from "~/server/db";
+import {
+  getAndroidTokenFromHeaders,
+  validateAnySession,
+} from "~/server/auth/android";
 
 /**
  * 1. CONTEXT
@@ -28,10 +32,12 @@ import { db } from "~/server/db";
  */
 export const createTRPCContext = async (opts: { headers: Headers }) => {
   const session = await auth();
+  const androidToken = getAndroidTokenFromHeaders(opts.headers);
 
   return {
     db,
     session,
+    androidToken,
     ...opts,
   };
 };
@@ -114,20 +120,33 @@ export const publicProcedure = t.procedure.use(timingMiddleware);
  * Protected (authenticated) procedure
  *
  * If you want a query or mutation to ONLY be accessible to logged in users, use this. It verifies
- * the session is valid and guarantees `ctx.session.user` is not null.
+ * the session is valid (either NextAuth or Android JWT) and guarantees `ctx.session.user` is not null.
+ *
+ * Supports both:
+ * 1. NextAuth sessions (from OAuth providers like Google)
+ * 2. Android JWT tokens (issued by Android device, sent via Authorization Bearer header or x-android-token)
  *
  * @see https://trpc.io/docs/procedures
  */
 export const protectedProcedure = t.procedure
   .use(timingMiddleware)
-  .use(({ ctx, next }) => {
-    if (!ctx.session || !ctx.session.user) {
+  .use(async ({ ctx, next }) => {
+    const validatedUser = await validateAnySession(
+      ctx.session,
+      ctx.androidToken,
+    );
+
+    if (!validatedUser) {
       throw new TRPCError({ code: "UNAUTHORIZED" });
     }
+
     return next({
       ctx: {
-        // infers the `session` as non-nullable
-        session: { ...ctx.session, user: ctx.session.user },
+        session: {
+          ...ctx.session,
+          user: validatedUser,
+        },
+        sessionSource: validatedUser.source,
       },
     });
   });

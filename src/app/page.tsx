@@ -7,81 +7,88 @@ import Button from "@mui/material/Button";
 import { Capacitor } from "@capacitor/core";
 import { env } from "~/env";
 import { SigninButtons } from "./_components/SigninButtons";
+import GoogleAuth from "./_components/native/android/googleAuth";
+// import { getTrpcServerClient } from "~/utils/trpcServerClient";
 
 export default async function Home() {
   const session = await auth();
+  // const api = getTrpcServerClient();
+  // const workouts = await api.workout.getWorkouts.query();
 
   const workouts = await api.workout.getWorkouts();
-  const tags = await api.workout.getAllTags();
 
+  // const tags = await api.workout.getAllTags();
+  // const ba = await GoogleAuth.hello();
+  // console.log("GoogleAuth response:", ba);
+
+  /*  <HydrateClient> */
   return (
-    <HydrateClient>
-      <div className="min-h-screen w-full items-center justify-center bg-background py-4">
-        <header className="flex w-full justify-center px-4">
-          <div className="container flex h-16 w-full flex-row items-center justify-center gap-4">
-            <div className="flex w-1/2 flex-grow items-center rounded-full bg-surface px-4 py-2 text-text">
-              <input
-                type="text"
-                placeholder={
-                  "Search..." +
-                  Capacitor.isPluginAvailable("Authenticator") +
-                  Capacitor.getPlatform() +
-                  Capacitor.isNativePlatform() +
-                  env.NEXT_PUBLIC_PLATFORM
-                }
-                className="flex-1 bg-transparent outline-none placeholder:text-white"
-              />
-            </div>
+    <div className="min-h-screen w-full items-center justify-center bg-background py-4">
+      <header className="flex w-full justify-center px-4">
+        <div className="container flex h-16 w-full flex-row items-center justify-center gap-4">
+          <div className="flex w-1/2 flex-grow items-center rounded-full bg-surface px-4 py-2 text-text">
+            <input
+              type="text"
+              placeholder={
+                "Search..." +
+                Capacitor.isPluginAvailable("Authenticator") +
+                Capacitor.getPlatform() +
+                Capacitor.isNativePlatform() +
+                env.NEXT_PUBLIC_PLATFORM
+              }
+              className="flex-1 bg-transparent outline-none placeholder:text-white"
+            />
+          </div>
 
-            {session?.user.image && (
-              <Link
-                className="block shrink"
-                href={
-                  Capacitor.isNativePlatform()
-                    ? "/api/auth/deviceLogin"
-                    : "/api/auth/signout"
-                }
-              >
-                <Image
-                  className="h-10 w-10 rounded-full"
-                  src={session.user.image}
-                  alt="user image"
-                  width={100}
-                  height={100}
-                />
-              </Link>
-            )}
-            {/* {!session && (
+          {session?.user.image && (
+            <Link
+              className="block shrink"
+              href={
+                Capacitor.isNativePlatform()
+                  ? "/api/auth/deviceLogin"
+                  : "/api/auth/signout"
+              }
+            >
+              <Image
+                className="h-10 w-10 rounded-full"
+                src={session.user.image}
+                alt="user image"
+                width={100}
+                height={100}
+              />
+            </Link>
+          )}
+          {/* {!session && (
               <Link className="text-white" href={"/api/auth/signin"}>
                 Sign in
               </Link>
             )} */}
 
-            <SigninButtons />
+          <SigninButtons />
+        </div>
+      </header>
+      <main className="flex min-h-screen w-full flex-col items-center px-4 text-white">
+        <div className="container flex w-full flex-col items-center justify-center py-16">
+          <div className="grid w-full grid-cols-2 justify-items-stretch gap-4 md:grid-cols-4 xl:grid-cols-6">
+            {workouts.map((workout, i) => (
+              <Link key={i} id={i + ""} href={`/workoutInfo/${workout.id}`}>
+                <WorkoutCard workout={workout} />
+              </Link>
+            ))}
           </div>
-        </header>
-        <main className="flex min-h-screen w-full flex-col items-center px-4 text-white">
-          <div className="container flex w-full flex-col items-center justify-center py-16">
-            <div className="grid w-full grid-cols-2 justify-items-stretch gap-4 md:grid-cols-4 xl:grid-cols-6">
-              {workouts.map((workout, i) => (
-                <Link key={i} id={i + ""} href={`/workoutInfo/${workout.id}`}>
-                  <WorkoutCard workout={workout} />
-                </Link>
-              ))}
-            </div>
-          </div>
-        </main>
-        <nav className="fixed bottom-4 flex w-full items-center justify-center self-center">
-          {session?.user && (
-            <Link
-              href={"/workoutInfo"}
-              className="rounded-full bg-primary px-10 py-3 font-semibold text-text no-underline transition hover:bg-secondary/20"
-            >
-              Create Workout
-            </Link>
-          )}
-        </nav>
-      </div>
-    </HydrateClient>
+        </div>
+      </main>
+      <nav className="fixed bottom-4 flex w-full items-center justify-center self-center">
+        {session?.user && (
+          <Link
+            href={"/workoutInfo"}
+            className="rounded-full bg-primary px-10 py-3 font-semibold text-text no-underline transition hover:bg-secondary/20"
+          >
+            Create Workout
+          </Link>
+        )}
+      </nav>
+    </div>
   );
+  /*   </HydrateClient> */
 }
